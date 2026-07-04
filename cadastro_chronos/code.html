@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chronos - Cadastro de Pesquisador</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#002113",
+                    "on-primary-container": "#eeefff",
+                    "primary": "#004ac6",
+                    "inverse-on-surface": "#eef0ff",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#c9e6ff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#00174b",
+                    "inverse-surface": "#283044",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#2563eb",
+                    "surface-bright": "#faf8ff",
+                    "secondary": "#006591",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#737686",
+                    "secondary-container": "#39b8fd",
+                    "tertiary-container": "#007d55",
+                    "outline-variant": "#c3c6d7",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#bdffdb",
+                    "surface-container-highest": "#dae2fd",
+                    "on-surface": "#131b2e",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "surface-container-low": "#f2f3ff",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#006242",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "inverse-primary": "#b4c5ff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-surface-variant": "#434655",
+                    "surface-tint": "#0053db",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#001e2f",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-variant": "#dae2fd",
+                    "primary-fixed": "#dbe1ff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "background": "#faf8ff",
+                    "secondary-fixed-dim": "#89ceff",
+                    "on-secondary-container": "#004666",
+                    "surface": "#faf8ff",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "md": "16px",
+                    "container-margin": "20px",
+                    "base": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "label-xs": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "label-xs": ["10px", {"lineHeight": "12px", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #faf8ff;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+      }
+      .custom-radio:checked {
+        background-color: #2563eb;
+        border-color: #2563eb;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface min-h-screen flex flex-col text-on-surface">
+<!-- Transactional Header (Suppressed Global Nav per Source of Truth) -->
+<header class="flex justify-between items-center h-16 px-container-margin w-full bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 sticky top-0 z-50">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary" style="font-size: 28px;">schedule</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Chronos</span>
+</div>
+<a class="font-label-sm text-label-sm text-primary hover:underline transition-all" href="#">Já tenho conta</a>
+</header>
+<main class="flex-grow flex items-center justify-center py-xl px-container-margin">
+<div class="w-full max-w-2xl bg-surface-container-lowest rounded-[16px] border border-outline-variant/20 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+<!-- Hero Header with Academic Vibe -->
+<div class="relative h-40 w-full overflow-hidden">
+<div class="bg-cover bg-center w-full h-full opacity-40" data-alt="A sophisticated macro shot of modern laboratory glassware and scientific instruments under soft, professional cool-toned lighting. The image emphasizes precision and cleanliness, featuring subtle reflections of deep blue and white. The background is a clean, minimalist university research environment with a serene and academic atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBeXo4JuClugQBj9xZZ_5TuIC_koUBre8OE--sXWsXvOUtWd2Xu3Y0rN4ASmZFmTSU1doAtvO3HQQx7sX5USv5MeI3vbBRVaxfVjDdOyLbcbHAyfmQvfA9QzEPetQLJe7krCesPaIH6qJhSvy4lDjLZzWYZ5VBIorldFaZMaAHSivEhAWc51JNMPAN4RSmQb1TAcr1cZHYi7HdUwjNZqp_1sQWHyh6r3dNMn5CifsaXt1hl1zaqzOx3')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<div class="absolute bottom-md left-lg">
+<h1 class="font-display-lg text-display-lg text-on-surface">Criar Conta</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Inicie sua jornada de pesquisa acadêmica.</p>
+</div>
+</div>
+<form class="p-lg space-y-lg">
+<!-- Seção: Informações Pessoais -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="md:col-span-2 space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="full_name">Nome Completo</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all placeholder:text-outline-variant" id="full_name" name="full_name" placeholder="Ex: Ana Maria Silva" required="" type="text"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="enrollment">Matrícula</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="enrollment" name="enrollment" placeholder="Nº da Matrícula" required="" type="text"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Categoria</label>
+<div class="flex items-center gap-md h-12">
+<label class="flex items-center gap-xs cursor-pointer group">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary rounded-full transition-all" name="category" type="radio" value="ic"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">IC</span>
+</label>
+<label class="flex items-center gap-xs cursor-pointer group">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary rounded-full transition-all" name="category" type="radio" value="pos"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Pós-graduando</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Seção: Laboratório e Acadêmico -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="lab">Laboratório</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="lab" name="lab" placeholder="Nome do Laboratório" type="text"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="advisor">Orientador</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="advisor" name="advisor" placeholder="Nome do Professor" type="text"/>
+</div>
+<div class="md:col-span-2 space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="hours">Carga Horária Semanal (Horas)</label>
+<div class="relative">
+<input class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary mt-4 mb-2" id="hours" max="40" min="1" name="hours" type="range" value="20"/>
+<div class="flex justify-between font-label-xs text-label-xs text-outline">
+<span>1h</span>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full font-bold" id="hours-display">20 horas</span>
+<span>40h</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Seção: Contato e Segurança -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="email">Email Institucional</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="email" name="email" placeholder="email@universidade.edu" required="" type="email"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="phone">Telefone</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="phone" name="phone" placeholder="(00) 00000-0000" type="tel"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="password">Senha</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="confirm_password">Confirmar Senha</label>
+<input class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-[16px] text-body-md font-body-md focus:border-primary transition-all" id="confirm_password" name="confirm_password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Termos de Uso -->
+<div class="pt-sm">
+<label class="flex items-start gap-md cursor-pointer group">
+<div class="mt-1">
+<input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary rounded-[4px] transition-all" required="" type="checkbox"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant leading-tight">
+                            Eu li e concordo com os <a class="text-primary font-semibold hover:underline" href="#">Termos de Uso</a> e a <a class="text-primary font-semibold hover:underline" href="#">Política de Privacidade</a> do Laboratório.
+                        </span>
+</label>
+</div>
+<!-- Botão de Ação -->
+<div class="pt-md pb-md">
+<button class="w-full h-14 bg-primary text-on-primary font-title-md text-title-md rounded-[16px] hover:bg-primary-container active:scale-[0.98] transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-sm" type="submit">
+                        Criar conta
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="mt-md text-center font-label-sm text-label-sm text-on-surface-variant">
+                        Problemas com o cadastro? <a class="text-primary font-bold" href="#">Fale com o suporte</a>
+</p>
+</div>
+</form>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="py-lg text-center">
+<p class="font-label-sm text-label-sm text-outline">© 2024 Chronos Academic. Todos os direitos reservados.</p>
+</footer>
+<script>
+        // Micro-interaction for Hours Slider
+        const slider = document.getElementById('hours');
+        const display = document.getElementById('hours-display');
+        
+        slider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            display.textContent = `${val} horas`;
+            
+            // Visual feedback - opacity shift
+            const intensity = val / 40;
+            display.style.backgroundColor = `rgba(37, 99, 235, ${0.1 + intensity * 0.9})`;
+            if (intensity > 0.5) {
+                display.style.color = '#ffffff';
+            } else {
+                display.style.color = '#00174b';
+            }
+        });
+
+        // Simple form validation visual feedback
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Processando...';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Conta Criada!';
+                btn.classList.replace('bg-primary', 'bg-tertiary-container');
+                btn.classList.add('text-on-tertiary-container');
+                
+                // Show a snackbar
+                const snack = document.createElement('div');
+                snack.className = 'fixed bottom-lg left-1/2 -translate-x-1/2 glass-card border border-outline-variant/30 px-lg py-md rounded-xl shadow-lg flex items-center gap-md animate-in slide-in-from-bottom-full duration-500 z-[100]';
+                snack.innerHTML = `
+                    <span class="material-symbols-outlined text-tertiary">check_circle</span>
+                    <span class="font-body-md text-body-md text-on-surface">Cadastro realizado com sucesso! Redirecionando...</span>
+                `;
+                document.body.appendChild(snack);
+            }, 1500);
+        });
+
+        // Casing Integrity Check - Force display labels to match JSON if any existed
+        // Since this was a custom request for a register screen, we manually ensure strings like "Criar conta" are preserved.
+    </script>
+</body></html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Chronos — Cadastro de Pesquisador</title>
+  <meta name="description" content="Crie sua conta no sistema Chronos de gestão de ponto para pesquisadores."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="chronos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #faf8ff; -webkit-tap-highlight-color: transparent; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .glass-card { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    input:focus, select:focus { outline: none; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="bg-surface min-h-screen flex flex-col text-on-surface">
+
+<!-- Header -->
+<header class="flex justify-between items-center h-16 px-container-margin w-full bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 sticky top-0 z-50">
+  <div class="flex items-center gap-xs">
+    <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+      <span class="material-symbols-outlined text-white text-[18px]" style="font-variation-settings:'FILL' 1">timer</span>
+    </div>
+    <span class="text-headline-lg-mobile font-bold text-on-surface">Chronos</span>
+  </div>
+  <a href="index.html" class="text-label-sm text-primary hover:underline underline-offset-4 transition-all font-semibold flex items-center gap-1">
+    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+    Já tenho conta
+  </a>
+</header>
+
+<!-- Main -->
+<main class="flex-grow flex items-start justify-center py-xl px-container-margin pb-16">
+  <div class="w-full max-w-2xl glass-card rounded-3xl border border-outline-variant/20 shadow-xl overflow-hidden fade-up">
+
+    <!-- Hero Header -->
+    <div class="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary to-primary-container">
+      <div class="absolute inset-0 opacity-20"
+        style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2220%22 cy=%2220%22 r=%2215%22 fill=%22white%22 opacity=%220.1%22/><circle cx=%2280%22 cy=%2270%22 r=%2225%22 fill=%22white%22 opacity=%220.1%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22white%22 opacity=%220.15%22/></svg>');
+        background-size: cover;">
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+      <div class="absolute bottom-md left-lg">
+        <h1 class="text-display-lg font-bold text-white drop-shadow">Criar Conta</h1>
+        <p class="text-body-md text-white/80">Inicie sua jornada de pesquisa acadêmica.</p>
+      </div>
+    </div>
+
+    <!-- Formulário -->
+    <form id="form-cadastro" class="p-lg space-y-lg" novalidate>
+
+      <!-- Seção: Informações Pessoais -->
+      <div>
+        <h2 class="text-label-sm text-outline uppercase tracking-widest mb-md flex items-center gap-xs">
+          <span class="material-symbols-outlined text-[16px] text-primary">person</span>
+          Informações Pessoais
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+          <div class="md:col-span-2 space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="full_name">Nome Completo *</label>
+            <input id="full_name" name="full_name"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="Ex: Ana Maria Silva" type="text" required autocomplete="name"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="enrollment">Matrícula *</label>
+            <input id="enrollment" name="enrollment"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="Nº da Matrícula" type="text" required autocomplete="off"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block">Categoria *</label>
+            <div class="flex items-center gap-lg h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl">
+              <label class="flex items-center gap-xs cursor-pointer group">
+                <input class="w-5 h-5 accent-primary" name="category" type="radio" value="IC" checked/>
+                <span class="text-body-md text-on-surface group-hover:text-primary transition-colors">IC</span>
+              </label>
+              <label class="flex items-center gap-xs cursor-pointer group">
+                <input class="w-5 h-5 accent-primary" name="category" type="radio" value="PG"/>
+                <span class="text-body-md text-on-surface group-hover:text-primary transition-colors">Pós-Graduação</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Laboratório e Acadêmico -->
+      <div>
+        <h2 class="text-label-sm text-outline uppercase tracking-widest mb-md flex items-center gap-xs">
+          <span class="material-symbols-outlined text-[16px] text-primary">biotech</span>
+          Vínculo Acadêmico
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="lab">Laboratório</label>
+            <input id="lab" name="lab"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="Nome do Laboratório" type="text"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="advisor">Orientador</label>
+            <input id="advisor" name="advisor"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="Nome do Professor" type="text"/>
+          </div>
+          <div class="md:col-span-2 space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="hours">Carga Horária Semanal</label>
+            <input id="hours" name="hours" class="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary mt-2 mb-1" type="range" min="1" max="40" value="20"/>
+            <div class="flex justify-between text-label-xs text-outline">
+              <span>1h</span>
+              <span id="hours-display" class="bg-primary text-white px-2 py-0.5 rounded-full font-bold text-[11px]">20 horas</span>
+              <span>40h</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Contato e Segurança -->
+      <div>
+        <h2 class="text-label-sm text-outline uppercase tracking-widest mb-md flex items-center gap-xs">
+          <span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+          Contato e Segurança
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="email">Email Institucional *</label>
+            <input id="email" name="email"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="email@universidade.edu" type="email" required autocomplete="email"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="phone">Telefone</label>
+            <input id="phone" name="phone"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="(00) 00000-0000" type="tel" autocomplete="tel"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="password">Senha *</label>
+            <input id="password" name="password"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="Mínimo 6 caracteres" type="password" required autocomplete="new-password"/>
+          </div>
+          <div class="space-y-xs">
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="confirm_password">Confirmar Senha *</label>
+            <input id="confirm_password" name="confirm_password"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all placeholder:text-outline-variant"
+              placeholder="••••••••" type="password" required autocomplete="new-password"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Erro de validação -->
+      <div id="form-error" class="hidden p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
+        <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings:'FILL' 1">error</span>
+        <span class="text-body-md text-error" id="form-error-msg">Verifique os campos e tente novamente.</span>
+      </div>
+
+      <!-- Termos -->
+      <label class="flex items-start gap-md cursor-pointer group">
+        <input id="terms" class="w-5 h-5 mt-0.5 accent-primary rounded flex-shrink-0" type="checkbox" required/>
+        <span class="text-body-md text-on-surface-variant leading-relaxed">
+          Eu li e concordo com os <a href="#" class="text-primary font-semibold hover:underline">Termos de Uso</a>
+          e a <a href="#" class="text-primary font-semibold hover:underline">Política de Privacidade</a>.
+        </span>
+      </label>
+
+      <!-- Botão -->
+      <button id="btn-cadastro" type="submit"
+        class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl hover:bg-primary-container active:scale-[0.98] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-sm">
+        Criar conta
+        <span class="material-symbols-outlined" id="cadastro-btn-icon">arrow_forward</span>
+      </button>
+
+      <p class="text-center text-label-sm text-on-surface-variant">
+        Problemas? <a href="#" class="text-primary font-bold hover:underline" id="btn-suporte">Fale com o suporte</a>
+      </p>
+    </form>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="py-lg text-center">
+  <p class="text-label-sm text-outline">© 2024 Chronos Academic. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+  // Slider de horas
+  const slider  = document.getElementById('hours');
+  const display = document.getElementById('hours-display');
+  slider.addEventListener('input', e => {
+    display.textContent = `${e.target.value} horas`;
+  });
+
+  // Submit do formulário
+  document.getElementById('form-cadastro').addEventListener('submit', e => {
+    e.preventDefault();
+    const errorBox = document.getElementById('form-error');
+    const errorMsg = document.getElementById('form-error-msg');
+    const btn      = document.getElementById('btn-cadastro');
+    const btnIcon  = document.getElementById('cadastro-btn-icon');
+
+    // Coletar dados
+    const nome       = document.getElementById('full_name').value.trim();
+    const matricula  = document.getElementById('enrollment').value.trim();
+    const categoria  = document.querySelector('input[name="category"]:checked')?.value || 'IC';
+    const lab        = document.getElementById('lab').value.trim();
+    const orientador = document.getElementById('advisor').value.trim();
+    const cargaHoras = parseInt(document.getElementById('hours').value, 10);
+    const email      = document.getElementById('email').value.trim();
+    const telefone   = document.getElementById('phone').value.trim();
+    const senha      = document.getElementById('password').value;
+    const confirmar  = document.getElementById('confirm_password').value;
+    const terms      = document.getElementById('terms').checked;
+
+    // Validação
+    if (!nome || !matricula || !email || !senha) {
+      errorMsg.textContent = 'Preencha todos os campos obrigatórios (*).';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (senha.length < 6) {
+      errorMsg.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (senha !== confirmar) {
+      errorMsg.textContent = 'As senhas não coincidem.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (!terms) {
+      errorMsg.textContent = 'Aceite os Termos de Uso para continuar.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    errorBox.classList.add('hidden');
+
+    // Loading
+    btn.disabled = true;
+    btn.classList.add('opacity-80');
+    btnIcon.textContent = 'sync';
+    btnIcon.classList.add('animate-spin');
+
+    setTimeout(() => {
+      // Salvar usuário
+      const novoUsuario = { nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha };
+      const allUsers = JSON.parse(localStorage.getItem('chronos_all_users') || '[]');
+      
+      // Checar matrícula duplicada
+      if (allUsers.find(u => u.matricula === matricula)) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80');
+        btnIcon.classList.remove('animate-spin');
+        btnIcon.textContent = 'arrow_forward';
+        errorMsg.textContent = 'Esta matrícula já está cadastrada.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+
+      allUsers.push(novoUsuario);
+      localStorage.setItem('chronos_all_users', JSON.stringify(allUsers));
+
+      // Sucesso
+      btnIcon.classList.remove('animate-spin');
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1">check_circle</span> Conta criada!';
+      btn.classList.remove('opacity-80');
+      btn.classList.replace('bg-primary', 'bg-tertiary-container');
+
+      ChronosUI.showToast('Cadastro realizado! Faça login para continuar.', 'success', 2500);
+      setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+    }, 1200);
+  });
+
+  document.getElementById('btn-suporte').addEventListener('click', e => {
+    e.preventDefault();
+    ChronosUI.showToast('Suporte: suporte@chronoslab.edu.br', 'info', 4000);
+  });
+
+  ChronosUI.setupMicroInteractions();
+</script>
+</body>
+</html>

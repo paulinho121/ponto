@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+  <title>Chronos — Perfil</title>
+  <meta name="description" content="Gerencie seu perfil acadêmico no sistema Chronos de gestão de ponto."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="chronos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+    .glass { background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+    @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both; }
+    .nav-active::after { content:''; display:block; width:4px; height:4px; background:currentColor; border-radius:50%; margin: 3px auto 0; }
+    /* Edit mode */
+    .field-view { display: block; }
+    .field-edit { display: none; }
+    body.editing .field-view { display: none; }
+    body.editing .field-edit { display: block; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32 antialiased">
+
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 glass border-b border-outline-variant/30 px-container-margin h-16 flex justify-between items-center">
+  <div class="flex items-center gap-md">
+    <div id="header-avatar-sm" class="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-sm flex items-center justify-center bg-primary">
+    </div>
+    <span class="text-headline-lg-mobile font-bold text-on-surface">Chronos</span>
+  </div>
+  <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
+    <span class="material-symbols-outlined text-primary">notifications</span>
+  </button>
+</header>
+
+<main class="pt-24 px-container-margin max-w-2xl mx-auto space-y-lg">
+
+  <!-- Foto e Dados Principais -->
+  <section class="flex flex-col items-center text-center space-y-md slide-up">
+    <div class="relative group">
+      <div id="profile-avatar" class="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-primary flex items-center justify-center">
+        <!-- Avatar renderizado por JS -->
+      </div>
+      <button id="btn-edit-photo" class="absolute bottom-0 right-0 bg-primary text-on-primary p-xs rounded-full shadow-md border-2 border-white active:scale-90 transition-transform" aria-label="Editar foto">
+        <span class="material-symbols-outlined text-[20px]">edit</span>
+      </button>
+    </div>
+    <div class="space-y-base">
+      <h1 id="profile-name" class="text-headline-lg font-bold text-on-surface">—</h1>
+      <p id="profile-role" class="text-on-surface-variant text-body-md">—</p>
+      <div class="inline-flex items-center px-sm py-xs bg-tertiary/10 text-tertiary rounded-full">
+        <span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings:'FILL' 1">check_circle</span>
+        <span class="text-label-sm font-semibold">Perfil Verificado</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cards de Informação -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-md slide-up" style="animation-delay:.05s">
+
+    <!-- Laboratório -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm">
+      <div class="flex items-center gap-sm mb-xs">
+        <span class="material-symbols-outlined text-primary">biotech</span>
+        <h3 class="text-label-sm uppercase tracking-wider text-outline font-semibold">Laboratório</h3>
+      </div>
+      <p id="profile-lab" class="text-title-md font-semibold text-on-surface">—</p>
+    </div>
+
+    <!-- Orientador -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm">
+      <div class="flex items-center gap-sm mb-xs">
+        <span class="material-symbols-outlined text-primary">school</span>
+        <h3 class="text-label-sm uppercase tracking-wider text-outline font-semibold">Orientador</h3>
+      </div>
+      <p id="profile-advisor" class="text-title-md font-semibold text-on-surface">—</p>
+    </div>
+
+    <!-- Detalhes de contato e carga -->
+    <div class="md:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm divide-y divide-outline-variant/20">
+      <div class="flex justify-between items-center py-sm first:pt-0">
+        <div class="flex items-center gap-sm">
+          <span class="material-symbols-outlined text-outline">mail</span>
+          <span class="text-on-surface-variant text-body-md">Email</span>
+        </div>
+        <span id="profile-email" class="text-on-surface font-medium text-body-md">—</span>
+      </div>
+      <div class="flex justify-between items-center py-sm">
+        <div class="flex items-center gap-sm">
+          <span class="material-symbols-outlined text-outline">badge</span>
+          <span class="text-on-surface-variant text-body-md">Matrícula</span>
+        </div>
+        <span id="profile-matricula" class="text-on-surface font-medium text-body-md">—</span>
+      </div>
+      <div class="flex justify-between items-center py-sm">
+        <div class="flex items-center gap-sm">
+          <span class="material-symbols-outlined text-outline">phone</span>
+          <span class="text-on-surface-variant text-body-md">Telefone</span>
+        </div>
+        <span id="profile-phone" class="text-on-surface font-medium text-body-md">—</span>
+      </div>
+      <div class="flex justify-between items-center py-sm last:pb-0">
+        <div class="flex items-center gap-sm">
+          <span class="material-symbols-outlined text-outline">schedule</span>
+          <span class="text-on-surface-variant text-body-md">Carga Semanal</span>
+        </div>
+        <div class="text-right">
+          <span id="profile-hours" class="text-on-surface font-bold text-body-md">—</span>
+          <div class="w-24 h-1.5 bg-outline-variant/30 rounded-full mt-1 overflow-hidden">
+            <div id="profile-hours-bar" class="bg-primary h-full rounded-full" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estatísticas rápidas -->
+  <section class="grid grid-cols-3 gap-md slide-up" style="animation-delay:.08s">
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm text-center">
+      <p id="stat-days" class="text-headline-lg font-bold text-primary">0</p>
+      <p class="text-label-sm text-on-surface-variant uppercase tracking-wide mt-1">Dias<br>registrados</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm text-center">
+      <p id="stat-hours" class="text-headline-lg font-bold text-secondary">0h</p>
+      <p class="text-label-sm text-on-surface-variant uppercase tracking-wide mt-1">Horas<br>trabalhadas</p>
+    </div>
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm text-center">
+      <p id="stat-streak" class="text-headline-lg font-bold text-tertiary">0</p>
+      <p class="text-label-sm text-on-surface-variant uppercase tracking-wide mt-1">Dias<br>seguidos</p>
+    </div>
+  </section>
+
+  <!-- Ações -->
+  <section class="space-y-sm slide-up" style="animation-delay:.1s">
+    <button id="btn-edit-profile"
+      class="w-full flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-200">
+      <div class="flex items-center gap-md">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">person_edit</span>
+        </div>
+        <span class="text-title-md font-semibold text-on-surface">Editar Perfil</span>
+      </div>
+      <span class="material-symbols-outlined text-outline">chevron_right</span>
+    </button>
+
+    <button id="btn-change-pass"
+      class="w-full flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-200">
+      <div class="flex items-center gap-md">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">lock_reset</span>
+        </div>
+        <span class="text-title-md font-semibold text-on-surface">Alterar Senha</span>
+      </div>
+      <span class="material-symbols-outlined text-outline">chevron_right</span>
+    </button>
+
+    <button id="btn-logout"
+      class="w-full flex items-center justify-center gap-sm p-md bg-error/5 text-error border border-error/15 rounded-xl shadow-sm hover:bg-error/10 transition-colors active:scale-[0.98] duration-200 mt-xl">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="text-title-md font-semibold">Sair da conta</span>
+    </button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="pt-lg pb-xl text-center">
+    <p class="text-label-sm text-outline uppercase tracking-widest">Chronos Research Management v1.0.0</p>
+  </footer>
+
+</main>
+
+<!-- Modal de Edição de Perfil -->
+<div id="edit-modal" class="fixed inset-0 z-[100] hidden items-end justify-center">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="modal-backdrop"></div>
+  <div class="relative w-full max-w-lg bg-white rounded-t-3xl p-lg shadow-2xl space-y-md max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-sm">
+      <h2 class="text-title-md font-bold text-on-surface">Editar Perfil</h2>
+      <button id="btn-close-modal" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+    <div class="space-y-md">
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant block">Nome Completo</label>
+        <input id="edit-nome" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all" type="text"/>
+      </div>
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant block">Laboratório</label>
+        <input id="edit-lab" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all" type="text"/>
+      </div>
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant block">Orientador</label>
+        <input id="edit-orientador" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all" type="text"/>
+      </div>
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant block">Telefone</label>
+        <input id="edit-telefone" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all" type="tel"/>
+      </div>
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant block">Carga Horária Semanal: <span id="edit-hours-display" class="text-primary font-bold">20h</span></label>
+        <input id="edit-hours" class="w-full accent-primary" type="range" min="1" max="40" value="20"/>
+      </div>
+    </div>
+    <button id="btn-save-profile"
+      class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-md shadow-primary/20 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm mt-sm">
+      <span class="material-symbols-outlined">save</span>
+      Salvar alterações
+    </button>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-outline-variant/20 h-20 px-container-margin flex justify-around items-center shadow-lg">
+  <a href="ponto.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all p-2 rounded-lg">
+    <span class="material-symbols-outlined">timer</span>
+    <span class="text-label-sm mt-1">Ponto</span>
+  </a>
+  <a href="historico.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all p-2 rounded-lg">
+    <span class="material-symbols-outlined">history</span>
+    <span class="text-label-sm mt-1">Histórico</span>
+  </a>
+  <a href="perfil.html" class="flex flex-col items-center justify-center text-primary nav-active p-2 rounded-lg">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">person</span>
+    <span class="text-label-sm">Perfil</span>
+  </a>
+</nav>
+
+<script>
+  // ── Auth guard ────────────────────────────────────────────────────────────
+  if (!ChronosNav.requireAuth()) { /* redirected */ }
+
+  let user = ChronosState.getUser();
+
+  // ── Renderizar dados do usuário ───────────────────────────────────────────
+  function renderProfile() {
+    user = ChronosState.getUser();
+
+    // Avatares
+    ChronosUI.renderAvatar(document.getElementById('header-avatar-sm'), user?.nome);
+    ChronosUI.renderAvatar(document.getElementById('profile-avatar'), user?.nome);
+
+    // Textos
+    document.getElementById('profile-name').textContent     = user?.nome || '—';
+    document.getElementById('profile-role').textContent     = `${user?.categoria || 'IC'} — ${user?.lab || 'Laboratório'}`;
+    document.getElementById('profile-lab').textContent      = user?.lab || 'Não informado';
+    document.getElementById('profile-advisor').textContent  = user?.orientador || 'Não informado';
+    document.getElementById('profile-email').textContent    = user?.email || '—';
+    document.getElementById('profile-matricula').textContent = user?.matricula || '—';
+    document.getElementById('profile-phone').textContent    = user?.telefone || 'Não informado';
+
+    const horas = user?.cargaHoras || 20;
+    document.getElementById('profile-hours').textContent    = `${horas}h / semana`;
+    document.getElementById('profile-hours-bar').style.width = `${(horas / 40) * 100}%`;
+  }
+
+  // ── Estatísticas ──────────────────────────────────────────────────────────
+  function renderStats() {
+    const history = ChronosState.getHistory().filter(r => r.entrada);
+    const totalMin = history.reduce((acc, r) => {
+      let t = 0;
+      const toMin = s => { if (!s) return null; const [h,m]=s.split(':').map(Number); return h*60+m; };
+      const e=toMin(r.entrada), a=toMin(r.almoco), ret=toMin(r.retorno), s=toMin(r.saida);
+      if (e!==null && a!==null) t += a-e;
+      if (ret!==null && s!==null) t += s-ret;
+      return acc + t;
+    }, 0);
+
+    document.getElementById('stat-days').textContent  = history.length;
+    document.getElementById('stat-hours').textContent = `${Math.floor(totalMin/60)}h`;
+
+    // Streak: dias consecutivos até hoje
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < history.length; i++) {
+      const d = new Date(history[i].date);
+      const diff = Math.round((today - d) / (1000*60*60*24));
+      if (diff === i) streak++;
+      else break;
+    }
+    document.getElementById('stat-streak').textContent = streak;
+  }
+
+  // ── Modal de edição ───────────────────────────────────────────────────────
+  function openEditModal() {
+    const modal = document.getElementById('edit-modal');
+    document.getElementById('edit-nome').value      = user?.nome || '';
+    document.getElementById('edit-lab').value       = user?.lab || '';
+    document.getElementById('edit-orientador').value = user?.orientador || '';
+    document.getElementById('edit-telefone').value  = user?.telefone || '';
+    document.getElementById('edit-hours').value     = user?.cargaHoras || 20;
+    document.getElementById('edit-hours-display').textContent = `${user?.cargaHoras || 20}h`;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  document.getElementById('edit-hours').addEventListener('input', e => {
+    document.getElementById('edit-hours-display').textContent = `${e.target.value}h`;
+  });
+
+  document.getElementById('btn-edit-profile').addEventListener('click', openEditModal);
+  document.getElementById('btn-edit-photo').addEventListener('click', () => {
+    ChronosUI.showToast('Upload de foto disponível em breve.', 'info');
+  });
+  document.getElementById('btn-close-modal').addEventListener('click', closeEditModal);
+  document.getElementById('modal-backdrop').addEventListener('click', closeEditModal);
+
+  document.getElementById('btn-save-profile').addEventListener('click', () => {
+    const updated = {
+      ...user,
+      nome:        document.getElementById('edit-nome').value.trim() || user.nome,
+      lab:         document.getElementById('edit-lab').value.trim(),
+      orientador:  document.getElementById('edit-orientador').value.trim(),
+      telefone:    document.getElementById('edit-telefone').value.trim(),
+      cargaHoras:  parseInt(document.getElementById('edit-hours').value, 10),
+    };
+
+    ChronosState.setUser(updated);
+
+    // Atualizar no array geral de usuários
+    const allUsers = JSON.parse(localStorage.getItem('chronos_all_users') || '[]');
+    const idx = allUsers.findIndex(u => u.matricula === user.matricula);
+    if (idx >= 0) { allUsers[idx] = updated; localStorage.setItem('chronos_all_users', JSON.stringify(allUsers)); }
+
+    closeEditModal();
+    renderProfile();
+    ChronosUI.showToast('Perfil atualizado com sucesso!', 'success');
+  });
+
+  // ── Alterar senha ─────────────────────────────────────────────────────────
+  document.getElementById('btn-change-pass').addEventListener('click', () => {
+    ChronosUI.showToast('Funcionalidade em desenvolvimento.', 'info');
+  });
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    if (confirm('Deseja sair da sua conta?')) {
+      ChronosNav.logout();
+    }
+  });
+
+  // ── Notificações ──────────────────────────────────────────────────────────
+  document.getElementById('btn-notifications').addEventListener('click', () => {
+    ChronosUI.showToast('Nenhuma notificação.', 'info');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  renderProfile();
+  renderStats();
+  ChronosUI.setupMicroInteractions();
+</script>
+</body>
+</html>

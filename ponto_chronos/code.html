@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Chronos - Registro de Ponto</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background-color: currentColor;
+            border-radius: 50%;
+            margin-top: 4px;
+        }
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-container": "#eeefff",
+                        "primary": "#004ac6",
+                        "inverse-on-surface": "#eef0ff",
+                        "surface-container-high": "#e2e7ff",
+                        "secondary-fixed": "#c9e6ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "inverse-surface": "#283044",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "surface-bright": "#faf8ff",
+                        "secondary": "#006591",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737686",
+                        "secondary-container": "#39b8fd",
+                        "tertiary-container": "#007d55",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#bdffdb",
+                        "surface-container-highest": "#dae2fd",
+                        "on-surface": "#131b2e",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-container": "#eaedff",
+                        "on-background": "#131b2e",
+                        "surface-container-low": "#f2f3ff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#006242",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#0053db",
+                        "surface-dim": "#d2d9f4",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#001e2f",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-variant": "#dae2fd",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "background": "#faf8ff",
+                        "secondary-fixed-dim": "#89ceff",
+                        "on-secondary-container": "#004666",
+                        "surface": "#faf8ff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "gutter": "16px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "md": "16px",
+                        "container-margin": "20px",
+                        "base": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "label-xs": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-xs": ["10px", {"lineHeight": "12px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md text-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 w-full bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 flex justify-between items-center h-16 px-container-margin">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young Brazilian female researcher named Ana Silva, wearing a modern lab coat, smiling warmly. The lighting is soft and high-key, reflecting a premium academic environment with clean white backgrounds and subtle blue accents typical of a high-end university research facility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkjrgaRO3cYY1XonCp8d2EKIPuGje6N16MCMJDt1YYY3-qaFlHUWEjEOQySY3d3giglYmhOUgTpH77UtFL5EOSjc7oxBi4HVHo3vWBKIfrwK-ySk8Fkch0t_x4YPE5JpdxxsWGwskaKPwyTde0MO7xwgqFweozjvPhivi76Koa8rWobsYw8fBOuwNEUZBIeOCS98CpqHIxwp1aCZ1q4TLQO3VCxZo6Vu5k8aLQYRyH_34qnn7asEDv"/>
+</div>
+<div>
+<h1 class="font-bold text-on-surface text-body-lg leading-tight">Ana Silva</h1>
+<p class="text-label-sm text-on-surface-variant">IC • NanoBio</p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-margin space-y-lg">
+<!-- Status & Clock Section -->
+<section class="text-center space-y-md">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-container/10 border border-tertiary-container/20">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-tertiary font-label-sm text-label-sm uppercase tracking-wider">Você está trabalhando</span>
+</div>
+<div class="py-4">
+<div class="text-[64px] font-extrabold tracking-tight text-on-surface leading-none tabular-nums" id="digital-clock">
+                    14:37:28
+                </div>
+<div class="mt-2 text-on-surface-variant font-medium text-body-lg" id="current-date">
+                    Quinta-feira, 24 de Outubro
+                </div>
+</div>
+</section>
+<!-- Journey Card (Bento Style) -->
+<div class="grid grid-cols-2 gap-md">
+<!-- Progress Card -->
+<div class="col-span-2 p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm space-y-sm">
+<div class="flex justify-between items-end">
+<span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Progresso Diário</span>
+<span class="text-title-md font-bold text-primary">72%</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: 72%"></div>
+</div>
+<p class="text-label-sm text-on-surface-variant italic">Faltam 1h 45min para bater a meta</p>
+</div>
+<!-- Punch Times -->
+<div class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square">
+<span class="material-symbols-outlined text-primary text-[28px]">login</span>
+<div>
+<p class="text-label-sm text-on-surface-variant">Entrada</p>
+<p class="text-title-md font-bold text-on-surface">08:03</p>
+</div>
+</div>
+<div class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square">
+<span class="material-symbols-outlined text-secondary text-[28px]">restaurant</span>
+<div>
+<p class="text-label-sm text-on-surface-variant">Almoço</p>
+<p class="text-title-md font-bold text-on-surface">12:01</p>
+</div>
+</div>
+<div class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square">
+<span class="material-symbols-outlined text-secondary text-[28px]">keyboard_return</span>
+<div>
+<p class="text-label-sm text-on-surface-variant">Retorno</p>
+<p class="text-title-md font-bold text-on-surface">13:02</p>
+</div>
+</div>
+<div class="p-md bg-surface-container-low/50 border border-dashed border-outline-variant rounded-xl flex flex-col justify-between aspect-square">
+<span class="material-symbols-outlined text-outline text-[28px]">logout</span>
+<div>
+<p class="text-label-sm text-on-surface-variant">Saída</p>
+<p class="text-title-md font-bold text-outline-variant">--:--</p>
+</div>
+</div>
+</div>
+<!-- Timeline -->
+<section class="space-y-md">
+<h3 class="font-title-md text-title-md text-on-surface">Linha do Tempo</h3>
+<div class="space-y-lg relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/30">
+<div class="relative pl-10 flex items-center justify-between">
+<div class="absolute left-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center ring-4 ring-background">
+<span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Início da Jornada</p>
+<p class="text-label-sm text-on-surface-variant">Laboratório NanoBio - Bloco B</p>
+</div>
+<span class="text-label-sm font-bold text-on-surface-variant">08:03</span>
+</div>
+<div class="relative pl-10 flex items-center justify-between">
+<div class="absolute left-0 w-6 h-6 rounded-full bg-secondary flex items-center justify-center ring-4 ring-background">
+<span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Pausa para Almoço</p>
+<p class="text-label-sm text-on-surface-variant">Restaurante Universitário</p>
+</div>
+<span class="text-label-sm font-bold text-on-surface-variant">12:01</span>
+</div>
+<div class="relative pl-10 flex items-center justify-between">
+<div class="absolute left-0 w-6 h-6 rounded-full bg-secondary flex items-center justify-center ring-4 ring-background">
+<span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings: 'FILL' 1;">update</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Retorno ao Posto</p>
+<p class="text-label-sm text-on-surface-variant">Laboratório NanoBio - Bloco B</p>
+</div>
+<span class="text-label-sm font-bold text-on-surface-variant">13:02</span>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB GIGANTE (Botão Principal) -->
+<div class="fixed bottom-28 left-0 right-0 px-container-margin flex justify-center pointer-events-none">
+<button class="pointer-events-auto bg-error h-16 px-8 rounded-full shadow-lg shadow-error/30 flex items-center gap-3 active:scale-95 transition-all duration-200 group">
+<span class="material-symbols-outlined text-white text-[24px]">logout</span>
+<span class="text-white font-bold text-body-lg uppercase tracking-wider">Registrar Saída</span>
+</button>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-t border-outline-variant/20 shadow-lg flex justify-around items-center h-20 px-container-margin pb-safe">
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 active:scale-110 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="font-label-sm text-label-sm">Ponto</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low/50 transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm">Histórico</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low/50 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</a>
+</nav>
+<script>
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false });
+            document.getElementById('digital-clock').textContent = timeStr;
+            
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const dateStr = now.toLocaleDateString('pt-BR', options);
+            const capitalizedDate = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+            document.getElementById('current-date').textContent = capitalizedDate;
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Micro-interaction for buttons
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.96)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = '';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+            });
+        });
+    </script>
+</body></html>

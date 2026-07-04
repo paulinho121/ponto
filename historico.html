@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+  <title>Chronos — Histórico de Ponto</title>
+  <meta name="description" content="Visualize seu histórico de registros de ponto no sistema Chronos."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="chronos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display:inline-block; line-height:1; }
+    .hide-scrollbar::-webkit-scrollbar { display:none; }
+    .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .glass { background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+    @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both; }
+    .nav-active::after { content:''; display:block; width:4px; height:4px; background:currentColor; border-radius:50%; margin: 3px auto 0; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 glass border-b border-outline-variant/30 flex justify-between items-center h-16 px-container-margin">
+  <div class="flex items-center gap-sm">
+    <div id="header-avatar" class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden bg-primary-fixed flex items-center justify-center">
+    </div>
+    <h1 class="text-headline-lg-mobile font-bold text-on-surface">Chronos</h1>
+  </div>
+  <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
+    <span class="material-symbols-outlined text-primary">notifications</span>
+  </button>
+</header>
+
+<main class="pt-24 px-container-margin space-y-lg">
+
+  <!-- Busca e filtro de mês -->
+  <section class="space-y-md slide-up">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+      <input id="search-input" class="w-full h-12 pl-10 pr-4 bg-surface-container-low border border-outline-variant/30 rounded-xl text-body-md focus:outline-none focus:border-primary transition-all" placeholder="Pesquisar registros..." type="text" aria-label="Pesquisar registros"/>
+    </div>
+    <!-- Carrossel de meses -->
+    <div id="month-tabs" class="flex gap-sm overflow-x-auto hide-scrollbar -mx-container-margin px-container-margin py-xs">
+      <!-- Gerado por JS -->
+    </div>
+  </section>
+
+  <!-- Resumo Mensal -->
+  <div id="monthly-summary" class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-md slide-up" style="animation-delay:.05s">
+    <div class="flex justify-between items-center">
+      <h2 class="text-title-md font-semibold text-on-surface">Resumo Mensal</h2>
+      <span id="summary-badge" class="px-sm py-xs bg-tertiary/10 text-tertiary rounded-full text-label-xs font-semibold">—</span>
+    </div>
+    <div class="grid grid-cols-2 gap-md">
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Total trabalhado</p>
+        <p id="summary-total" class="text-headline-lg-mobile text-primary font-bold">0h 00min</p>
+      </div>
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Meta do mês</p>
+        <p id="summary-meta" class="text-headline-lg-mobile text-secondary font-bold">0h 00min</p>
+      </div>
+    </div>
+    <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+      <div id="summary-bar" class="bg-tertiary-container h-full rounded-full" style="width:0%; transition:width 1s ease-out"></div>
+    </div>
+  </div>
+
+  <!-- Lista de Registros -->
+  <section class="space-y-md slide-up" style="animation-delay:.1s">
+    <div class="flex justify-between items-center">
+      <h2 class="text-title-md font-semibold text-on-surface">Registros</h2>
+      <button id="btn-filter" class="text-primary text-label-sm flex items-center gap-xs hover:underline underline-offset-4">
+        Filtrar <span class="material-symbols-outlined text-[16px]">filter_list</span>
+      </button>
+    </div>
+
+    <div id="records-list" class="space-y-sm">
+      <!-- Gerado por JS -->
+    </div>
+
+    <div id="records-empty" class="hidden text-center py-xl">
+      <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">history</span>
+      <p class="text-body-md text-on-surface-variant mt-2">Nenhum registro encontrado.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 w-full z-50 glass border-t border-outline-variant/20 shadow-lg flex justify-around items-center h-20 px-container-margin">
+  <a href="ponto.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">timer</span>
+    <span class="text-label-sm">Ponto</span>
+  </a>
+  <a href="historico.html" class="flex flex-col items-center justify-center text-primary nav-active">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">history</span>
+    <span class="text-label-sm">Histórico</span>
+  </a>
+  <a href="perfil.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">person</span>
+    <span class="text-label-sm">Perfil</span>
+  </a>
+</nav>
+
+<script>
+  // ── Auth guard ────────────────────────────────────────────────────────────
+  if (!ChronosNav.requireAuth()) { /* redirected */ }
+
+  const user     = ChronosState.getUser();
+  const metaMin  = (user?.cargaHoras || 20) / 5 * 60; // meta diária
+  const metaMensal = metaMin * 22; // ~22 dias úteis
+
+  ChronosUI.renderAvatar(document.getElementById('header-avatar'), user?.nome);
+
+  // ── Dados: histórico real + amostras de demonstração ─────────────────────
+  const realHistory = ChronosState.getHistory();
+
+  // Registros de demonstração para telas com pouco histórico
+  const DEMO_RECORDS = [
+    { date:'Mon Jun 30 2025', weekday:'Segunda-feira', dia:30, mes:'Jun', entrada:'08:05', almoco:'12:10', retorno:'13:05', saida:'17:20' },
+    { date:'Fri Jun 27 2025', weekday:'Sexta-feira',   dia:27, mes:'Jun', entrada:'08:00', almoco:'12:00', retorno:'13:15', saida:'17:30' },
+    { date:'Thu Jun 26 2025', weekday:'Quinta-feira',  dia:26, mes:'Jun', entrada:'08:10', almoco:'12:05', retorno:'13:00', saida:'17:15' },
+    { date:'Wed Jun 25 2025', weekday:'Quarta-feira',  dia:25, mes:'Jun', entrada:'08:00', almoco:'12:00', retorno:'13:00', saida:'15:00' }, // incompleto
+    { date:'Tue Jun 24 2025', weekday:'Terça-feira',   dia:24, mes:'Jun', entrada:'07:55', almoco:'12:10', retorno:'13:30', saida:'17:30' },
+    { date:'Mon Jun 23 2025', weekday:'Segunda-feira', dia:23, mes:'Jun', entrada:'08:00', almoco:null,    retorno:null,    saida:null    }, // feriado/ausente
+  ];
+
+  // Mescla histórico real (no topo) com demos
+  const allRecords = [
+    ...realHistory.filter(r => r.entrada),
+    ...DEMO_RECORDS.filter(d => !realHistory.find(r => r.date === d.date)),
+  ];
+
+  // ── Meses disponíveis ─────────────────────────────────────────────────────
+  const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let selectedMonth = new Date().getMonth(); // mês atual
+
+  function buildMonthTabs() {
+    const container = document.getElementById('month-tabs');
+    container.innerHTML = '';
+    const now = new Date();
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = d.getMonth();
+      const btn = document.createElement('button');
+      btn.dataset.month = m;
+      btn.textContent = MONTHS_PT[m];
+      btn.className = m === selectedMonth
+        ? 'px-md py-xs rounded-full bg-primary text-on-primary text-label-sm font-semibold whitespace-nowrap shadow-sm transition-all'
+        : 'px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all';
+      btn.addEventListener('click', () => {
+        selectedMonth = m;
+        buildMonthTabs();
+        renderRecords();
+      });
+      container.appendChild(btn);
+    }
+  }
+
+  // ── Calcular duração de um registro ──────────────────────────────────────
+  function calcRecordDuration(r) {
+    const toMin = t => { if (!t) return null; const [h,m] = t.split(':').map(Number); return h*60+m; };
+    let total = 0;
+    const e = toMin(r.entrada), a = toMin(r.almoco), ret = toMin(r.retorno), s = toMin(r.saida);
+    if (e !== null && a !== null) total += a - e;
+    if (ret !== null && s !== null) total += s - ret;
+    // se não tem saída mas tem retorno
+    if (ret !== null && s === null && a !== null) total += 0;
+    if (e !== null && a === null && s !== null) total += s - e;
+    return total;
+  }
+
+  function isComplete(r, minTarget) {
+    const d = calcRecordDuration(r);
+    return d >= minTarget * 0.9; // 90% da meta
+  }
+
+  // ── Renderizar registros ──────────────────────────────────────────────────
+  function renderRecords(filter = '') {
+    const list  = document.getElementById('records-list');
+    const empty = document.getElementById('records-empty');
+    list.innerHTML = '';
+
+    const filtered = allRecords.filter(r => {
+      const d = new Date(r.date);
+      if (d.getMonth() !== selectedMonth) return false;
+      if (filter) {
+        const text = `${r.weekday || ''} ${r.dia || ''} ${r.mes || ''}`.toLowerCase();
+        if (!text.includes(filter.toLowerCase())) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      empty.classList.remove('hidden');
+      updateSummary([]);
+      return;
+    }
+    empty.classList.add('hidden');
+
+    filtered.forEach(r => {
+      const d = new Date(r.date);
+      const dia = r.dia || d.getDate();
+      const mes = r.mes || MONTHS_PT[d.getMonth()].slice(0, 3);
+      const weekday = r.weekday || d.toLocaleDateString('pt-BR', { weekday:'long' });
+      const durMin  = calcRecordDuration(r);
+      const complete = durMin > 0 && isComplete(r, metaMin);
+      const hasTimes = r.entrada;
+
+      // Linha de horários
+      let timeLine = '—';
+      if (r.entrada && r.almoco && r.retorno && r.saida) {
+        timeLine = `${r.entrada} - ${r.almoco} | ${r.retorno} - ${r.saida}`;
+      } else if (r.entrada && r.saida) {
+        timeLine = `${r.entrada} - ${r.saida}`;
+      } else if (r.entrada) {
+        timeLine = `Entrada: ${r.entrada}`;
+      }
+
+      const badgeClass = !hasTimes
+        ? 'bg-outline-variant/20 text-on-surface-variant'
+        : complete
+          ? 'bg-tertiary/10 text-tertiary'
+          : 'bg-error/10 text-error';
+      const badgeText = !hasTimes ? 'Ausente' : complete ? 'Completo' : 'Incompleto';
+
+      const card = document.createElement('div');
+      card.className = `record-card p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer ${!hasTimes ? 'opacity-60' : ''}`;
+      card.innerHTML = `
+        <div class="flex items-center gap-md">
+          <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center flex-shrink-0">
+            <span class="text-label-xs text-on-surface-variant uppercase">${mes}</span>
+            <span class="text-title-md font-bold text-on-surface">${dia}</span>
+          </div>
+          <div>
+            <p class="text-body-md font-semibold text-on-surface capitalize">${weekday}</p>
+            <p class="text-label-sm text-on-surface-variant">${timeLine}</p>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0 ml-md">
+          <p class="text-body-lg font-bold text-on-surface">${hasTimes ? ChronosUI.formatDuration(durMin) : '--h --min'}</p>
+          <span class="px-sm py-1 ${badgeClass} rounded-full text-label-xs font-semibold">${badgeText}</span>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    updateSummary(filtered);
+  }
+
+  // ── Resumo do mês ─────────────────────────────────────────────────────────
+  function updateSummary(records) {
+    const withWork = records.filter(r => r.entrada && calcRecordDuration(r) > 0);
+    const totalMin = withWork.reduce((acc, r) => acc + calcRecordDuration(r), 0);
+    const metaMes  = metaMin * 22;
+    const pct      = Math.min(100, Math.round((totalMin / metaMes) * 100));
+
+    document.getElementById('summary-total').textContent = ChronosUI.formatDuration(totalMin);
+    document.getElementById('summary-meta').textContent  = ChronosUI.formatDuration(metaMes);
+    document.getElementById('summary-bar').style.width   = `${pct}%`;
+
+    const badge = document.getElementById('summary-badge');
+    if (pct >= 90) {
+      badge.textContent = 'Carga Completa';
+      badge.className = 'px-sm py-xs bg-tertiary/10 text-tertiary rounded-full text-label-xs font-semibold';
+    } else if (pct > 0) {
+      badge.textContent = `${pct}% concluído`;
+      badge.className = 'px-sm py-xs bg-primary/10 text-primary rounded-full text-label-xs font-semibold';
+    } else {
+      badge.textContent = 'Sem registros';
+      badge.className = 'px-sm py-xs bg-outline-variant/20 text-on-surface-variant rounded-full text-label-xs font-semibold';
+    }
+  }
+
+  // ── Busca ─────────────────────────────────────────────────────────────────
+  document.getElementById('search-input').addEventListener('input', e => {
+    renderRecords(e.target.value);
+  });
+
+  document.getElementById('btn-filter').addEventListener('click', () => {
+    ChronosUI.showToast('Filtros avançados em breve!', 'info');
+  });
+
+  document.getElementById('btn-notifications').addEventListener('click', () => {
+    ChronosUI.showToast('Nenhuma notificação.', 'info');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  buildMonthTabs();
+  renderRecords();
+  ChronosUI.setupMicroInteractions();
+</script>
+</body>
+</html>
