@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0053db"/>
+      <stop offset="1" stop-color="#1747c9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Peixe-zebra -->
+  <g>
+    <path d="M128 256 L30 178 L82 256 L30 334 Z" fill="#ffffff"/>
+    <path d="M212 196 L244 138 L272 196 Z" fill="#ffffff"/>
+    <ellipse cx="248" cy="256" rx="120" ry="72" fill="#ffffff"/>
+    <path d="M268 312 L300 364 L318 312 Z" fill="#ffffff"/>
+    <rect x="150" y="222" width="176" height="15" rx="7.5" fill="#0a3ea3"/>
+    <rect x="140" y="249" width="186" height="15" rx="7.5" fill="#0a3ea3"/>
+    <rect x="150" y="276" width="176" height="15" rx="7.5" fill="#0a3ea3"/>
+    <circle cx="338" cy="234" r="12" fill="#0a1a3d"/>
+  </g>
+
+  <!-- Selo de relogio (ponto) -->
+  <circle cx="380" cy="380" r="76" fill="#ffffff"/>
+  <circle cx="380" cy="380" r="62" fill="#007d55"/>
+  <line x1="380" y1="380" x2="380" y2="344" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <line x1="380" y1="380" x2="408" y2="380" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="380" cy="380" r="7" fill="#ffffff"/>
+</svg>

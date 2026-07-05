@@ -127,6 +127,7 @@ const ChronosState = {
       cargaHoras: row.carga_horas,
       telefone:   row.telefone,
       email:      row.email,
+      avatarUrl:  row.avatar_url,
       isAdmin:    !!row.is_admin,
     };
   },
@@ -188,6 +189,36 @@ const ChronosState = {
     return profile;
   },
 
+  async updateAvatarUrl(url) {
+    const user = this.getUser();
+    const { data, error } = await window.chronosSupabase
+      .from('profiles')
+      .update({ avatar_url: url })
+      .eq('id', user.id)
+      .select()
+      .single();
+    if (error) throw error;
+    const profile = this._mapProfile(data);
+    this.setUser(profile);
+    return profile;
+  },
+
+  // Envia a foto (já redimensionada, ver ChronosUI.resizeImageFile) para o
+  // bucket "avatars" e grava a URL pública no perfil. Sempre grava no mesmo
+  // caminho (um arquivo por usuário), sobrescrevendo a foto anterior.
+  async uploadAvatar(fileOrBlob) {
+    const user = this.getUser();
+    const path = `${user.id}/avatar.jpg`;
+    const { error: uploadError } = await window.chronosSupabase.storage
+      .from('avatars')
+      .upload(path, fileOrBlob, { upsert: true, contentType: 'image/jpeg', cacheControl: '3600' });
+    if (uploadError) throw uploadError;
+
+    const { data } = window.chronosSupabase.storage.from('avatars').getPublicUrl(path);
+    const url = `${data.publicUrl}?t=${Date.now()}`;
+    return this.updateAvatarUrl(url);
+  },
+
   // ── Registros de ponto (tabela ponto_registros) ──────────────────────────
   _todayStr() {
     return new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD no fuso local
@@ -217,10 +248,16 @@ const ChronosState = {
   },
 
   async savePunch(action, time) {
+    return this.savePunches({ [action]: time });
+  },
+
+  // Registra múltiplos horários de uma vez (ex: almoço + saída, para quem
+  // encerra o dia na hora do almoço e não vai retornar).
+  async savePunches(fields) {
     const user = this.getUser();
     const { data, error } = await window.chronosSupabase
       .from('ponto_registros')
-      .upsert({ user_id: user.id, data: this._todayStr(), [action]: time }, { onConflict: 'user_id,data' })
+      .upsert({ user_id: user.id, data: this._todayStr(), ...fields }, { onConflict: 'user_id,data' })
       .select()
       .single();
     if (error) throw error;
@@ -238,12 +275,14 @@ const ChronosState = {
   },
 
   // Fluxo do ponto — próxima ação disponível
+  // Obs: se a saída já foi batida (ex: quem encerra o dia no horário do
+  // almoço, sem retorno), o dia está encerrado independente do retorno.
   getNextPunchAction(record) {
     if (!record.entrada) return 'entrada';
+    if (record.saida)    return 'done';
     if (!record.almoco)  return 'almoco';
     if (!record.retorno) return 'retorno';
-    if (!record.saida)   return 'saida';
-    return 'done';
+    return 'saida';
   },
 
   // ── Locais permitidos para bater o ponto (super admin) ───────────────────
@@ -409,6 +448,24 @@ const ChronosUI = {
     }, duration);
   },
 
+  // Exibe modal de bloqueio (ex: ponto negado por localização). Se a página
+  // não tiver o modal no HTML, cai no toast normal como alternativa.
+  showLocationDeniedModal(message) {
+    const modal = document.getElementById('modal-location-denied');
+    const msgEl = document.getElementById('modal-location-denied-msg');
+    if (!modal || !msgEl) {
+      this.showToast(message, 'error', 6000);
+      return;
+    }
+    msgEl.textContent = message;
+    modal.classList.remove('hidden');
+  },
+
+  hideLocationDeniedModal() {
+    const modal = document.getElementById('modal-location-denied');
+    if (modal) modal.classList.add('hidden');
+  },
+
   // Configura micro-interações padrão em todos os elementos clicáveis
   setupMicroInteractions() {
     document.querySelectorAll('button, a').forEach(el => {
@@ -451,13 +508,48 @@ const ChronosUI = {
     return initials.toUpperCase();
   },
 
-  // Renderiza avatar de iniciais no elemento
-  renderAvatar(element, name) {
+  // Renderiza a foto do usuário no elemento (ou as iniciais, sem foto)
+  renderAvatar(element, name, avatarUrl) {
+    if (avatarUrl) {
+      element.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="Foto de perfil"/>`;
+      return;
+    }
     const initials = this.getInitialsAvatar(name);
     element.innerHTML = `
       <div class="w-full h-full bg-primary flex items-center justify-center rounded-full">
         <span class="text-white font-bold text-sm">${initials}</span>
       </div>`;
+  },
+
+  // Redimensiona uma imagem no navegador (canvas) antes do upload, evitando
+  // enviar fotos de câmera enormes para o storage. Retorna um Blob JPEG.
+  resizeImageFile(file, maxDim = 512, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+          else { width = Math.round((width * maxDim) / height); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error('Não foi possível processar a imagem.'))),
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Arquivo de imagem inválido.'));
+      };
+      img.src = url;
+    });
   },
 };
 
@@ -496,3 +588,12 @@ const PUNCH_CONFIG = {
     next:    null,
   },
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PWA — registro do service worker (permite instalar o app na tela inicial)
+// ─────────────────────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}

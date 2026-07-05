@@ -3,8 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-  <title>Chronos — Registro de Ponto</title>
-  <meta name="description" content="Registre sua jornada de trabalho no laboratório de pesquisa com o Chronos."/>
+  <title>Ponto Qfam — Registro de Ponto</title>
+  <meta name="description" content="Registre sua jornada de trabalho no laboratório Qfam."/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png"/>
+  <link rel="apple-touch-icon" href="icons/icon-180.png"/>
+  <meta name="theme-color" content="#004ac6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Ponto Qfam"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -128,6 +136,14 @@
 
 </main>
 
+<!-- Opção: encerrar o dia no horário do almoço (sem retorno) -->
+<div id="early-leave-option" class="hidden fixed bottom-48 left-0 right-0 px-container-margin flex justify-center pointer-events-none z-40">
+  <label class="pointer-events-auto flex items-center gap-2 bg-white border border-outline-variant/30 rounded-full pl-3 pr-4 py-2 shadow-sm text-body-md text-on-surface-variant max-w-full">
+    <input type="checkbox" id="chk-early-leave" class="w-4 h-4 rounded accent-primary flex-shrink-0"/>
+    <span>Vou embora após o almoço (não vou retornar hoje)</span>
+  </label>
+</div>
+
 <!-- FAB — Botão de Ponto -->
 <div class="fixed bottom-28 left-0 right-0 px-container-margin flex justify-center pointer-events-none z-40">
   <button id="btn-punch"
@@ -154,6 +170,20 @@
   </a>
 </nav>
 
+<!-- Modal: Ponto Negado (localização fora do local autorizado) -->
+<div id="modal-location-denied" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/50 px-container-margin">
+  <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-lg space-y-md text-center slide-up">
+    <div class="mx-auto w-14 h-14 rounded-full bg-error-container/40 flex items-center justify-center">
+      <span class="material-symbols-outlined text-error text-[32px]" style="font-variation-settings:'FILL' 1">block</span>
+    </div>
+    <div>
+      <p class="text-title-md font-bold text-on-surface">Ponto Negado</p>
+      <p id="modal-location-denied-msg" class="text-body-md text-on-surface-variant mt-1"></p>
+    </div>
+    <button id="modal-location-denied-close" type="button" class="w-full h-12 bg-primary text-on-primary font-semibold rounded-2xl active:scale-95 transition-all">Entendi</button>
+  </div>
+</div>
+
 <script>
 (async () => {
   // ── Auth guard ────────────────────────────────────────────────────────────
@@ -166,7 +196,7 @@
   // Preencher header
   document.getElementById('header-name').textContent = user?.nome || 'Pesquisador';
   document.getElementById('header-role').textContent = `${user?.categoria || 'IC'} • ${user?.lab || 'Laboratório'}`;
-  ChronosUI.renderAvatar(document.getElementById('header-avatar'), user?.nome);
+  ChronosUI.renderAvatar(document.getElementById('header-avatar'), user?.nome, user?.avatarUrl);
 
   // ── Relógio em tempo real ─────────────────────────────────────────────────
   function updateClock() {
@@ -200,8 +230,16 @@
       }
     });
 
-    // Status badge
+    // Opção de encerrar o dia no almoço (só faz sentido nesse momento do fluxo)
+    const earlyLeaveBox = document.getElementById('early-leave-option');
     const action = ChronosState.getNextPunchAction(record);
+    if (action === 'almoco') {
+      earlyLeaveBox.classList.remove('hidden');
+    } else {
+      earlyLeaveBox.classList.add('hidden');
+      document.getElementById('chk-early-leave').checked = false;
+    }
+
     const statusMap = {
       entrada: { text:'Aguardando início',     dot:'bg-outline',           badge:'bg-surface-container border-outline-variant/30 text-on-surface-variant' },
       almoco:  { text:'Você está trabalhando', dot:'bg-tertiary animate-pulse-soft', badge:'bg-tertiary/10 border-tertiary/20 text-tertiary' },
@@ -313,6 +351,8 @@
     const action = ChronosState.getNextPunchAction(record);
     if (action === 'done') return;
 
+    const earlyLeave = action === 'almoco' && document.getElementById('chk-early-leave').checked;
+
     const btn  = document.getElementById('btn-punch');
     const icon = document.getElementById('punch-icon');
     const lbl  = document.getElementById('punch-label');
@@ -333,16 +373,20 @@
           .map(l => ({ ...l, dist: ChronosState.distanceMeters(pos.latitude, pos.longitude, l.latitude, l.longitude) }))
           .sort((a, b) => a.dist - b.dist)[0];
         if (maisProximo.dist > maisProximo.raio_metros) {
-          throw new Error(
+          const err = new Error(
             `Você está a ${Math.round(maisProximo.dist)}m de "${maisProximo.nome}" ` +
-            `(raio permitido: ${maisProximo.raio_metros}m). Aproxime-se para bater o ponto.`
+            `(raio permitido: ${maisProximo.raio_metros}m). Aproxime-se do local autorizado para bater o ponto.`
           );
+          err.locationDenied = true;
+          throw err;
         }
       }
 
       lbl.textContent = 'Registrando...';
       const now = ChronosUI.nowTime();
-      record = await ChronosState.savePunch(action, now);
+      record = earlyLeave
+        ? await ChronosState.savePunches({ almoco: now, saida: now })
+        : await ChronosState.savePunch(action, now);
 
       icon.classList.remove('animate-spin');
       btn.disabled = false;
@@ -353,14 +397,23 @@
         retorno: `🔄 Retorno registrado às ${now}`,
         saida:   `🏠 Saída registrada às ${now}. Bom descanso!`,
       };
-      ChronosUI.showToast(messages[action], 'success');
+      const msg = earlyLeave ? `🏠 Almoço e saída registrados às ${now}. Bom descanso!` : messages[action];
+      ChronosUI.showToast(msg, 'success');
       renderAll();
     } catch (err) {
       icon.classList.remove('animate-spin');
       btn.disabled = false;
-      ChronosUI.showToast('Erro ao registrar ponto: ' + (err.message || 'tente novamente.'), 'error');
+      if (err.locationDenied) {
+        ChronosUI.showLocationDeniedModal(err.message);
+      } else {
+        ChronosUI.showToast('Erro ao registrar ponto: ' + (err.message || 'tente novamente.'), 'error');
+      }
       renderAll();
     }
+  });
+
+  document.getElementById('modal-location-denied-close').addEventListener('click', () => {
+    ChronosUI.hideLocationDeniedModal();
   });
 
   // ── Notificações ──────────────────────────────────────────────────────────

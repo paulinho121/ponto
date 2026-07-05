@@ -3,8 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-  <title>Chronos — Perfil</title>
-  <meta name="description" content="Gerencie seu perfil acadêmico no sistema Chronos de gestão de ponto."/>
+  <title>Ponto Qfam — Perfil</title>
+  <meta name="description" content="Gerencie seu perfil acadêmico no Ponto Qfam."/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png"/>
+  <link rel="apple-touch-icon" href="icons/icon-180.png"/>
+  <meta name="theme-color" content="#004ac6"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Ponto Qfam"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -32,7 +40,7 @@
   <div class="flex items-center gap-md">
     <div id="header-avatar-sm" class="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-sm flex items-center justify-center bg-primary">
     </div>
-    <span class="text-headline-lg-mobile font-bold text-on-surface">Chronos</span>
+    <span class="text-headline-lg-mobile font-bold text-on-surface">Ponto Qfam</span>
   </div>
   <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
     <span class="material-symbols-outlined text-primary">notifications</span>
@@ -48,8 +56,9 @@
         <!-- Avatar renderizado por JS -->
       </div>
       <button id="btn-edit-photo" class="absolute bottom-0 right-0 bg-primary text-on-primary p-xs rounded-full shadow-md border-2 border-white active:scale-90 transition-transform" aria-label="Editar foto">
-        <span class="material-symbols-outlined text-[20px]">edit</span>
+        <span class="material-symbols-outlined text-[20px]" id="edit-photo-icon">edit</span>
       </button>
+      <input id="avatar-file-input" type="file" accept="image/*" class="hidden"/>
     </div>
     <div class="space-y-base">
       <h1 id="profile-name" class="text-headline-lg font-bold text-on-surface">—</h1>
@@ -179,7 +188,7 @@
 
   <!-- Footer -->
   <footer class="pt-lg pb-xl text-center">
-    <p class="text-label-sm text-outline uppercase tracking-widest">Chronos Research Management v1.0.0</p>
+    <p class="text-label-sm text-outline uppercase tracking-widest">Ponto Qfam v1.0.0</p>
   </footer>
 
 </main>
@@ -252,8 +261,8 @@
     user = ChronosState.getUser();
 
     // Avatares
-    ChronosUI.renderAvatar(document.getElementById('header-avatar-sm'), user?.nome);
-    ChronosUI.renderAvatar(document.getElementById('profile-avatar'), user?.nome);
+    ChronosUI.renderAvatar(document.getElementById('header-avatar-sm'), user?.nome, user?.avatarUrl);
+    ChronosUI.renderAvatar(document.getElementById('profile-avatar'), user?.nome, user?.avatarUrl);
 
     // Textos
     document.getElementById('profile-name').textContent     = user?.nome || '—';
@@ -323,7 +332,40 @@
 
   document.getElementById('btn-edit-profile').addEventListener('click', openEditModal);
   document.getElementById('btn-edit-photo').addEventListener('click', () => {
-    ChronosUI.showToast('Upload de foto disponível em breve.', 'info');
+    document.getElementById('avatar-file-input').click();
+  });
+
+  document.getElementById('avatar-file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      ChronosUI.showToast('Selecione um arquivo de imagem.', 'error');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      ChronosUI.showToast('Imagem muito grande (máximo 8MB).', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    const icon = document.getElementById('edit-photo-icon');
+    icon.textContent = 'sync';
+    icon.classList.add('animate-spin');
+
+    try {
+      const resized = await ChronosUI.resizeImageFile(file);
+      await ChronosState.uploadAvatar(resized);
+      renderProfile();
+      ChronosUI.showToast('Foto de perfil atualizada!', 'success');
+    } catch (err) {
+      ChronosUI.showToast('Erro ao enviar foto: ' + (err.message || 'tente novamente.'), 'error');
+    } finally {
+      icon.classList.remove('animate-spin');
+      icon.textContent = 'edit';
+      e.target.value = '';
+    }
   });
   document.getElementById('btn-close-modal').addEventListener('click', closeEditModal);
   document.getElementById('modal-backdrop').addEventListener('click', closeEditModal);
