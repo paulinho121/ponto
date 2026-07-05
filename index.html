@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Chronos — Login</title>
+  <meta name="description" content="Acesse o sistema Chronos de gestão de ponto para pesquisadores acadêmicos."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="chronos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #faf8ff; -webkit-tap-highlight-color: transparent; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+    .input-focus-ring:focus-within { box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.12); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .fade-up-1 { animation-delay: 0.05s; }
+    .fade-up-2 { animation-delay: 0.15s; }
+    .fade-up-3 { animation-delay: 0.25s; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 0.8s linear infinite; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center bg-background selection:bg-primary/20">
+
+<!-- Background decorativo -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+  <div class="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-primary/5 blur-3xl"></div>
+  <div class="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-secondary/5 blur-3xl"></div>
+</div>
+
+<!-- Logo -->
+<header class="w-full pt-16 flex flex-col items-center z-10 fade-up">
+  <div class="w-14 h-14 bg-primary rounded-3xl flex items-center justify-center shadow-xl shadow-primary/25 mb-4 transition-transform hover:scale-105 duration-300">
+    <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">timer</span>
+  </div>
+  <h1 class="text-display-lg font-bold text-on-surface tracking-tight">Chronos</h1>
+  <p class="text-body-md text-on-surface-variant mt-1">Laboratório de Pesquisa Avançada</p>
+</header>
+
+<!-- Card de Login -->
+<main class="w-full max-w-[400px] px-container-margin z-10 fade-up fade-up-1">
+  <div class="bg-white/85 backdrop-blur-2xl border border-outline-variant/30 rounded-3xl p-8 shadow-2xl shadow-slate-200/60">
+    
+    <!-- Mensagem de erro -->
+    <div id="login-error" class="hidden mb-4 p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
+      <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings:'FILL' 1;">error</span>
+      <span class="text-body-md text-error" id="login-error-msg">Matrícula ou senha inválidos.</span>
+    </div>
+
+    <div class="space-y-5">
+      <!-- Matrícula -->
+      <div class="space-y-2">
+        <label class="text-label-sm text-on-surface-variant ml-1 block" for="matricula">Matrícula</label>
+        <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+          <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">person</span>
+          <input id="matricula" class="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-body-md focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-outline-variant" placeholder="Digite sua matrícula" type="text" autocomplete="username"/>
+        </div>
+      </div>
+
+      <!-- Senha -->
+      <div class="space-y-2">
+        <div class="flex justify-between items-center ml-1">
+          <label class="text-label-sm text-on-surface-variant" for="senha">Senha</label>
+          <button type="button" id="btn-forgot" class="text-label-sm text-primary hover:underline decoration-primary/30 underline-offset-4">Esqueci minha senha</button>
+        </div>
+        <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+          <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">lock</span>
+          <input id="senha" class="w-full h-12 pl-12 pr-12 bg-slate-50 border border-slate-200 rounded-2xl text-body-md focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-outline-variant" placeholder="••••••••" type="password" autocomplete="current-password"/>
+          <button class="absolute right-4 text-outline hover:text-on-surface transition-colors" onclick="togglePassword()" type="button" id="btn-toggle-pass" aria-label="Mostrar senha">
+            <span class="material-symbols-outlined text-[20px]" id="password-toggle">visibility</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Botão Entrar -->
+      <button id="btn-login" type="button"
+        class="w-full h-14 bg-primary text-white text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2">
+        Entrar
+        <span class="material-symbols-outlined" id="login-btn-icon">arrow_forward</span>
+      </button>
+
+      <!-- Cadastro -->
+      <p class="text-center text-body-md text-on-surface-variant pt-1">
+        Novo pesquisador?
+        <a href="cadastro.html" class="text-primary font-semibold hover:underline underline-offset-4">Criar conta</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Biometria / Suporte -->
+  <div class="mt-8 flex justify-center items-center gap-6 text-on-surface-variant/60">
+    <button type="button" class="flex flex-col items-center gap-2 hover:text-primary transition-colors group" id="btn-biometric">
+      <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-primary transition-colors">
+        <span class="material-symbols-outlined">fingerprint</span>
+      </div>
+      <span class="text-label-sm">Biometria</span>
+    </button>
+    <div class="w-px h-8 bg-slate-200"></div>
+    <button type="button" class="flex flex-col items-center gap-2 hover:text-primary transition-colors group" id="btn-support">
+      <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-primary transition-colors">
+        <span class="material-symbols-outlined">help_outline</span>
+      </div>
+      <span class="text-label-sm">Suporte</span>
+    </button>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="w-full pb-10 flex flex-col items-center gap-3 z-10 fade-up fade-up-2">
+  <div class="flex items-center gap-3 opacity-40">
+    <div class="h-px w-8 bg-on-surface-variant"></div>
+    <span class="text-label-sm uppercase tracking-widest text-on-surface-variant">Institucional</span>
+    <div class="h-px w-8 bg-on-surface-variant"></div>
+  </div>
+  <p class="text-label-sm text-on-surface-variant/50">Versão 1.0.0 • © 2024 Chronos Lab</p>
+</footer>
+
+<script>
+  // ── Se já está logado, vai direto pro painel ──────────────────────────────
+  (async () => {
+    if (!window.chronosSupabase) return;
+    const session = await ChronosState.getSession();
+    if (session) window.location.replace('ponto.html');
+  })();
+
+  // ── Toggle senha ──────────────────────────────────────────────────────────
+  function togglePassword() {
+    const input = document.getElementById('senha');
+    const icon  = document.getElementById('password-toggle');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+  }
+
+  // ── Login ─────────────────────────────────────────────────────────────────
+  document.getElementById('btn-login').addEventListener('click', handleLogin);
+  document.getElementById('senha').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  async function handleLogin() {
+    const matricula = document.getElementById('matricula').value.trim();
+    const senha     = document.getElementById('senha').value;
+    const errorBox  = document.getElementById('login-error');
+    const errorMsg  = document.getElementById('login-error-msg');
+    const btn       = document.getElementById('btn-login');
+    const btnIcon   = document.getElementById('login-btn-icon');
+
+    // Validação básica
+    if (!matricula || !senha) {
+      errorMsg.textContent = 'Preencha sua matrícula e senha.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (!window.chronosSupabase) {
+      errorMsg.textContent = 'Configuração do Supabase ausente (supabase-config.js).';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    btn.classList.add('opacity-80');
+    btnIcon.textContent = 'sync';
+    btnIcon.classList.add('animate-spin');
+    errorBox.classList.add('hidden');
+
+    try {
+      await ChronosState.loginWithMatricula(matricula, senha);
+      btnIcon.classList.remove('animate-spin');
+      btnIcon.textContent = 'check';
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1">check_circle</span> Bem-vindo(a)!';
+      btn.classList.remove('opacity-80');
+      setTimeout(() => { window.location.href = 'ponto.html'; }, 700);
+    } catch (err) {
+      btn.disabled = false;
+      btn.classList.remove('opacity-80');
+      btnIcon.classList.remove('animate-spin');
+      btnIcon.textContent = 'arrow_forward';
+      errorMsg.textContent = err.message || 'Matrícula ou senha inválidos.';
+      errorBox.classList.remove('hidden');
+    }
+  }
+
+  // ── Suporte e Biometria (UI feedback) ────────────────────────────────────
+  document.getElementById('btn-forgot').addEventListener('click', () => {
+    ChronosUI.showToast('Entre em contato com o suporte do laboratório.', 'info');
+  });
+  document.getElementById('btn-biometric').addEventListener('click', () => {
+    ChronosUI.showToast('Biometria disponível no app mobile.', 'info');
+  });
+  document.getElementById('btn-support').addEventListener('click', () => {
+    ChronosUI.showToast('Suporte: suporte@chronoslab.edu.br', 'info', 4000);
+  });
+
+  // ── Parallax sutil no card ────────────────────────────────────────────────
+  document.addEventListener('mousemove', e => {
+    const card = document.querySelector('main > div');
+    if (!card) return;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    card.style.transform = `translate(${(e.clientX - cx) / 60}px, ${(e.clientY - cy) / 60}px)`;
+  });
+
+  ChronosUI.setupMicroInteractions();
+</script>
+</body>
+</html>

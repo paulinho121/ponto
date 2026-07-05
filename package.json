@@ -1,0 +1,9 @@
+{
+  "name": "chronos",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Chronos — Sistema de Gestão de Ponto para Pesquisa Acadêmica",
+  "scripts": {
+    "build": "node scripts/generate-config.js"
+  }
+}

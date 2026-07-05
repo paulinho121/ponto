@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+  <title>Chronos — Registro de Ponto</title>
+  <meta name="description" content="Registre sua jornada de trabalho no laboratório de pesquisa com o Chronos."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="chronos.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    @keyframes pulse-soft { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.85; transform:scale(1.03); } }
+    .animate-pulse-soft { animation: pulse-soft 3s cubic-bezier(.4,0,.6,1) infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .animate-spin { animation: spin 0.7s linear infinite; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(.16,1,.3,1) both; }
+    .glass { background:rgba(255,255,255,0.85); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .nav-active::after { content:''; display:block; width:4px; height:4px; background:currentColor; border-radius:50%; margin: 3px auto 0; }
+    /* Progress bar transition */
+    #progress-bar { transition: width 1.2s cubic-bezier(.16,1,.3,1); }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+
+<!-- Top App Bar -->
+<header class="fixed top-0 z-50 w-full glass border-b border-outline-variant/30 flex justify-between items-center h-16 px-container-margin">
+  <div class="flex items-center gap-3">
+    <div id="header-avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-surface-container-high flex items-center justify-center">
+      <!-- Avatar renderizado por JS -->
+    </div>
+    <div>
+      <p class="font-bold text-on-surface text-body-lg leading-tight" id="header-name">Carregando...</p>
+      <p class="text-label-sm text-on-surface-variant" id="header-role">—</p>
+    </div>
+  </div>
+  <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
+    <span class="material-symbols-outlined text-primary">notifications</span>
+  </button>
+</header>
+
+<!-- Conteúdo Principal -->
+<main class="pt-24 px-container-margin space-y-lg">
+
+  <!-- Status & Relógio -->
+  <section class="text-center space-y-md slide-up">
+    <div id="status-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/30">
+      <span id="status-dot" class="w-2 h-2 rounded-full bg-outline animate-pulse-soft"></span>
+      <span id="status-text" class="text-on-surface-variant text-label-sm uppercase tracking-wider">Aguardando início</span>
+    </div>
+    <div class="py-2">
+      <div id="digital-clock" class="text-[64px] font-extrabold tracking-tight text-on-surface leading-none tabular-nums">
+        00:00:00
+      </div>
+      <div id="current-date" class="mt-2 text-on-surface-variant font-medium text-body-lg capitalize">
+        —
+      </div>
+    </div>
+  </section>
+
+  <!-- Cards Bento (Progresso + Horários) -->
+  <div class="grid grid-cols-2 gap-md slide-up" style="animation-delay:.05s">
+
+    <!-- Progresso Diário -->
+    <div class="col-span-2 p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm space-y-sm">
+      <div class="flex justify-between items-end">
+        <span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Progresso Diário</span>
+        <span id="progress-pct" class="text-title-md font-bold text-primary">0%</span>
+      </div>
+      <div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-primary rounded-full" style="width:0%"></div>
+      </div>
+      <p id="progress-label" class="text-label-sm text-on-surface-variant italic">
+        Registre sua entrada para iniciar
+      </p>
+    </div>
+
+    <!-- Entrada -->
+    <div id="card-entrada" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square">
+      <span class="material-symbols-outlined text-primary text-[28px]">login</span>
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Entrada</p>
+        <p id="time-entrada" class="text-title-md font-bold text-on-surface">--:--</p>
+      </div>
+    </div>
+
+    <!-- Almoço -->
+    <div id="card-almoco" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
+      <span class="material-symbols-outlined text-secondary text-[28px]">restaurant</span>
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Almoço</p>
+        <p id="time-almoco" class="text-title-md font-bold text-on-surface">--:--</p>
+      </div>
+    </div>
+
+    <!-- Retorno -->
+    <div id="card-retorno" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
+      <span class="material-symbols-outlined text-secondary text-[28px]">keyboard_return</span>
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Retorno</p>
+        <p id="time-retorno" class="text-title-md font-bold text-on-surface">--:--</p>
+      </div>
+    </div>
+
+    <!-- Saída -->
+    <div id="card-saida" class="p-md bg-surface-container-low/50 border border-dashed border-outline-variant rounded-xl flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
+      <span class="material-symbols-outlined text-outline text-[28px]">logout</span>
+      <div>
+        <p class="text-label-sm text-on-surface-variant">Saída</p>
+        <p id="time-saida" class="text-title-md font-bold text-outline-variant">--:--</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Linha do Tempo -->
+  <section class="space-y-md slide-up" style="animation-delay:.1s">
+    <h2 class="text-title-md font-semibold text-on-surface">Linha do Tempo</h2>
+    <div id="timeline" class="space-y-lg relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/30">
+      <p id="timeline-empty" class="pl-10 text-body-md text-on-surface-variant italic">Nenhum registro hoje ainda.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- FAB — Botão de Ponto -->
+<div class="fixed bottom-28 left-0 right-0 px-container-margin flex justify-center pointer-events-none z-40">
+  <button id="btn-punch"
+    class="pointer-events-auto h-16 px-8 rounded-full shadow-xl flex items-center gap-3 active:scale-95 transition-all duration-200 bg-primary shadow-primary/30 animate-pulse-soft"
+    aria-label="Registrar ponto">
+    <span id="punch-icon" class="material-symbols-outlined text-white text-[24px]">login</span>
+    <span id="punch-label" class="text-white font-bold text-body-lg uppercase tracking-wider">Registrar Entrada</span>
+  </button>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 w-full z-50 glass border-t border-outline-variant/20 shadow-lg flex justify-around items-center h-20 px-container-margin">
+  <a href="ponto.html" class="flex flex-col items-center justify-center text-primary nav-active" id="nav-ponto">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">timer</span>
+    <span class="text-label-sm">Ponto</span>
+  </a>
+  <a href="historico.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" id="nav-historico">
+    <span class="material-symbols-outlined">history</span>
+    <span class="text-label-sm">Histórico</span>
+  </a>
+  <a href="perfil.html" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" id="nav-perfil">
+    <span class="material-symbols-outlined">person</span>
+    <span class="text-label-sm">Perfil</span>
+  </a>
+</nav>
+
+<script>
+(async () => {
+  // ── Auth guard ────────────────────────────────────────────────────────────
+  if (!(await ChronosNav.requireAuth())) return; // redirected
+
+  // ── Dados do usuário ──────────────────────────────────────────────────────
+  const user   = ChronosState.getUser();
+  const metaMin = (user?.cargaHoras || 20) / 5 * 60; // meta diária em minutos (carga/semana ÷ 5 dias)
+
+  // Preencher header
+  document.getElementById('header-name').textContent = user?.nome || 'Pesquisador';
+  document.getElementById('header-role').textContent = `${user?.categoria || 'IC'} • ${user?.lab || 'Laboratório'}`;
+  ChronosUI.renderAvatar(document.getElementById('header-avatar'), user?.nome);
+
+  // ── Relógio em tempo real ─────────────────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('digital-clock').textContent =
+      now.toLocaleTimeString('pt-BR', { hour12: false });
+    document.getElementById('current-date').textContent =
+      now.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+    updateProgress();
+  }
+  // ── Estado do dia ─────────────────────────────────────────────────────────
+  let record = await ChronosState.getTodayRecord();
+
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function renderAll() {
+    const times = { entrada: record.entrada, almoco: record.almoco, retorno: record.retorno, saida: record.saida };
+
+    ['entrada','almoco','retorno','saida'].forEach(key => {
+      const el = document.getElementById(`time-${key}`);
+      const card = document.getElementById(`card-${key}`);
+      if (times[key]) {
+        el.textContent = times[key];
+        el.classList.replace('text-outline-variant', 'text-on-surface');
+        card.classList.remove('opacity-40');
+        card.classList.add('opacity-100');
+      } else {
+        el.textContent = '--:--';
+        card.classList.add('opacity-40');
+      }
+    });
+
+    // Status badge
+    const action = ChronosState.getNextPunchAction(record);
+    const statusMap = {
+      entrada: { text:'Aguardando início',     dot:'bg-outline',           badge:'bg-surface-container border-outline-variant/30 text-on-surface-variant' },
+      almoco:  { text:'Você está trabalhando', dot:'bg-tertiary animate-pulse-soft', badge:'bg-tertiary/10 border-tertiary/20 text-tertiary' },
+      retorno: { text:'Pausa para almoço',     dot:'bg-secondary animate-pulse-soft', badge:'bg-secondary/10 border-secondary/20 text-secondary' },
+      saida:   { text:'Você está trabalhando', dot:'bg-tertiary animate-pulse-soft', badge:'bg-tertiary/10 border-tertiary/20 text-tertiary' },
+      done:    { text:'Jornada encerrada',      dot:'bg-tertiary',          badge:'bg-tertiary/10 border-tertiary/20 text-tertiary' },
+    };
+    const s = statusMap[action];
+    const badgeEl = document.getElementById('status-badge');
+    const dotEl   = document.getElementById('status-dot');
+    const textEl  = document.getElementById('status-text');
+    badgeEl.className = `inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${s.badge}`;
+    dotEl.className   = `w-2 h-2 rounded-full ${s.dot}`;
+    textEl.textContent = s.text;
+
+    // FAB
+    const cfg = PUNCH_CONFIG[action];
+    const btn  = document.getElementById('btn-punch');
+    if (action === 'done') {
+      btn.disabled = true;
+      btn.classList.remove('animate-pulse-soft');
+      btn.className = btn.className.replace(/bg-\w+-?\w* shadow-\w+-?\w*\/\d+/g,'');
+    }
+    btn.className = btn.className.replace(/(bg-\w+(-\w+)? )|(shadow-\w+(-\w+)?\/\d+ )/g,'');
+    const colorParts = cfg.color.split(' ');
+    colorParts.forEach(c => { if(!btn.classList.contains(c)) btn.classList.add(c); });
+    document.getElementById('punch-icon').textContent  = cfg.icon;
+    document.getElementById('punch-label').textContent = cfg.label;
+
+    // Timeline
+    renderTimeline();
+  }
+
+  // ── Timeline ──────────────────────────────────────────────────────────────
+  const TIMELINE_CFG = {
+    entrada: { label:'Início da Jornada',  sub: () => user?.lab || 'Laboratório', icon:'play_arrow',       color:'bg-primary' },
+    almoco:  { label:'Pausa para Almoço',  sub: () => 'Restaurante Universitário', icon:'restaurant',       color:'bg-secondary' },
+    retorno: { label:'Retorno ao Posto',   sub: () => user?.lab || 'Laboratório', icon:'update',           color:'bg-secondary' },
+    saida:   { label:'Saída do Laboratório', sub: () => 'Fim da jornada',          icon:'check_circle',     color:'bg-tertiary-container' },
+  };
+
+  function renderTimeline() {
+    const container = document.getElementById('timeline');
+    const empty     = document.getElementById('timeline-empty');
+    const events    = [];
+
+    ['entrada','almoco','retorno','saida'].forEach(key => {
+      if (record[key]) events.push({ key, time: record[key], ...TIMELINE_CFG[key] });
+    });
+
+    if (events.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+
+    // Remover itens antigos
+    container.querySelectorAll('.timeline-item').forEach(el => el.remove());
+
+    events.forEach(ev => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item relative pl-10 flex items-center justify-between';
+      item.innerHTML = `
+        <div class="absolute left-0 w-6 h-6 rounded-full ${ev.color} flex items-center justify-center ring-4 ring-background shadow-sm">
+          <span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings:'FILL' 1">${ev.icon}</span>
+        </div>
+        <div>
+          <p class="font-bold text-on-surface">${ev.label}</p>
+          <p class="text-label-sm text-on-surface-variant">${ev.sub()}</p>
+        </div>
+        <span class="text-label-sm font-bold text-on-surface-variant">${ev.time}</span>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // ── Progresso ─────────────────────────────────────────────────────────────
+  function updateProgress() {
+    const workedMin = ChronosState.calcWorkedMinutes(record);
+    const pct       = Math.min(100, Math.round((workedMin / metaMin) * 100));
+    const remaining = Math.max(0, metaMin - workedMin);
+
+    document.getElementById('progress-pct').textContent = `${pct}%`;
+    document.getElementById('progress-bar').style.width  = `${pct}%`;
+
+    if (workedMin === 0) {
+      document.getElementById('progress-label').textContent = 'Registre sua entrada para iniciar';
+    } else if (remaining > 0) {
+      document.getElementById('progress-label').textContent =
+        `Faltam ${ChronosUI.formatDuration(remaining)} para bater a meta`;
+    } else {
+      document.getElementById('progress-label').textContent =
+        `Meta atingida! ${ChronosUI.formatDuration(workedMin)} trabalhados 🎉`;
+    }
+
+    // Cor da barra conforme %
+    const bar = document.getElementById('progress-bar');
+    if (pct >= 100) {
+      bar.className = 'h-full bg-tertiary-container rounded-full';
+    } else if (pct >= 70) {
+      bar.className = 'h-full bg-primary rounded-full';
+    } else {
+      bar.className = 'h-full bg-primary rounded-full';
+    }
+  }
+
+  // ── Botão de Ponto ────────────────────────────────────────────────────────
+  document.getElementById('btn-punch').addEventListener('click', async () => {
+    const action = ChronosState.getNextPunchAction(record);
+    if (action === 'done') return;
+
+    const btn  = document.getElementById('btn-punch');
+    const icon = document.getElementById('punch-icon');
+    const lbl  = document.getElementById('punch-label');
+
+    // Feedback de loading
+    btn.disabled = true;
+    icon.textContent = 'sync';
+    icon.classList.add('animate-spin');
+    lbl.textContent = 'Registrando...';
+
+    try {
+      const now = ChronosUI.nowTime();
+      record = await ChronosState.savePunch(action, now);
+
+      icon.classList.remove('animate-spin');
+      btn.disabled = false;
+
+      const messages = {
+        entrada: `✅ Entrada registrada às ${now}`,
+        almoco:  `🍽️ Almoço registrado às ${now}`,
+        retorno: `🔄 Retorno registrado às ${now}`,
+        saida:   `🏠 Saída registrada às ${now}. Bom descanso!`,
+      };
+      ChronosUI.showToast(messages[action], 'success');
+      renderAll();
+    } catch (err) {
+      icon.classList.remove('animate-spin');
+      btn.disabled = false;
+      ChronosUI.showToast('Erro ao registrar ponto: ' + (err.message || 'tente novamente.'), 'error');
+      renderAll();
+    }
+  });
+
+  // ── Notificações ──────────────────────────────────────────────────────────
+  document.getElementById('btn-notifications').addEventListener('click', () => {
+    ChronosUI.showToast('Nenhuma notificação no momento.', 'info');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  renderAll();
+  ChronosUI.setupMicroInteractions();
+})();
+</script>
+</body>
+</html>
