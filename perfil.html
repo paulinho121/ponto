@@ -160,6 +160,16 @@
       <span class="material-symbols-outlined text-outline">chevron_right</span>
     </button>
 
+    <a id="btn-admin" href="admin.html" class="hidden w-full flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-200">
+      <div class="flex items-center gap-md">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+        </div>
+        <span class="text-title-md font-semibold text-on-surface">Administração de Locais</span>
+      </div>
+      <span class="material-symbols-outlined text-outline">chevron_right</span>
+    </a>
+
     <button id="btn-logout"
       class="w-full flex items-center justify-center gap-sm p-md bg-error/5 text-error border border-error/15 rounded-xl shadow-sm hover:bg-error/10 transition-colors active:scale-[0.98] duration-200 mt-xl">
       <span class="material-symbols-outlined">logout</span>
@@ -257,6 +267,8 @@
     const horas = user?.cargaHoras || 20;
     document.getElementById('profile-hours').textContent    = `${horas}h / semana`;
     document.getElementById('profile-hours-bar').style.width = `${(horas / 40) * 100}%`;
+
+    document.getElementById('btn-admin').classList.toggle('hidden', !user?.isAdmin);
   }
 
   // ── Estatísticas ──────────────────────────────────────────────────────────

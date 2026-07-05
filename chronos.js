@@ -127,6 +127,7 @@ const ChronosState = {
       cargaHoras: row.carga_horas,
       telefone:   row.telefone,
       email:      row.email,
+      isAdmin:    !!row.is_admin,
     };
   },
 
@@ -243,6 +244,56 @@ const ChronosState = {
     if (!record.retorno) return 'retorno';
     if (!record.saida)   return 'saida';
     return 'done';
+  },
+
+  // ── Locais permitidos para bater o ponto (super admin) ───────────────────
+  async listLocations() {
+    const { data, error } = await window.chronosSupabase
+      .from('locais_permitidos').select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getActiveLocations() {
+    const { data, error } = await window.chronosSupabase
+      .from('locais_permitidos').select('*').eq('ativo', true);
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createLocation({ nome, latitude, longitude, raioMetros }) {
+    const user = this.getUser();
+    const { data, error } = await window.chronosSupabase
+      .from('locais_permitidos')
+      .insert({ nome, latitude, longitude, raio_metros: raioMetros, created_by: user.id })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async setLocationActive(id, ativo) {
+    const { error } = await window.chronosSupabase
+      .from('locais_permitidos').update({ ativo }).eq('id', id);
+    if (error) throw error;
+  },
+
+  async deleteLocation(id) {
+    const { error } = await window.chronosSupabase
+      .from('locais_permitidos').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // Distância entre duas coordenadas em metros (fórmula de Haversine)
+  distanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toRad = d => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   },
 
   // Calcula minutos trabalhados no dia
@@ -364,6 +415,30 @@ const ChronosUI = {
       el.addEventListener('mousedown', () => { el.style.transform = 'scale(0.96)'; });
       el.addEventListener('mouseup',   () => { el.style.transform = ''; });
       el.addEventListener('mouseleave',() => { el.style.transform = ''; });
+    });
+  },
+
+  // Obtém a localização GPS atual do navegador (Promise)
+  getCurrentPosition(options = {}) {
+    const ERROR_MESSAGES = {
+      1: 'Permissão de localização negada. Habilite o acesso à localização no navegador.',
+      2: 'Não foi possível determinar sua localização (sinal de GPS indisponível).',
+      3: 'Tempo esgotado ao tentar obter sua localização.',
+    };
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocalização não é suportada neste navegador.'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve({
+          latitude:  pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy:  pos.coords.accuracy,
+        }),
+        err => reject(new Error(ERROR_MESSAGES[err.code] || 'Não foi possível obter sua localização.')),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0, ...options }
+      );
     });
   },
 

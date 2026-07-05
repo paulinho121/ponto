@@ -324,6 +324,23 @@
     lbl.textContent = 'Registrando...';
 
     try {
+      // Validação de localização — só se houver locais ativos cadastrados
+      const locais = await ChronosState.getActiveLocations();
+      if (locais.length > 0) {
+        lbl.textContent = 'Obtendo localização...';
+        const pos = await ChronosUI.getCurrentPosition();
+        const maisProximo = locais
+          .map(l => ({ ...l, dist: ChronosState.distanceMeters(pos.latitude, pos.longitude, l.latitude, l.longitude) }))
+          .sort((a, b) => a.dist - b.dist)[0];
+        if (maisProximo.dist > maisProximo.raio_metros) {
+          throw new Error(
+            `Você está a ${Math.round(maisProximo.dist)}m de "${maisProximo.nome}" ` +
+            `(raio permitido: ${maisProximo.raio_metros}m). Aproxime-se para bater o ponto.`
+          );
+        }
+      }
+
+      lbl.textContent = 'Registrando...';
       const now = ChronosUI.nowTime();
       record = await ChronosState.savePunch(action, now);
 
