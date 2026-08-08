@@ -13,5 +13,9 @@
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "env": {
+    "SUPABASE_URL": "YOUR_SUPABASE_URL_HERE",
+    "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY_HERE"
+  }
 }

@@ -7,20 +7,36 @@ import { createClient } from '@supabase/supabase-js';
 import { initializeApp } from './core/application.js';
 import { appConfig } from './config/app-config.js';
 import { logger } from './utils/logger.js';
-
-// Configuração do Supabase
-const SUPABASE_URL = 'https://topsiocrsfnopttovfla.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcHNpb2Nyc2Zub3B0dG92ZmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNjQxNDgsImV4cCI6MjA5ODc0MDE0OH0.tqh278ymyqoZHz9oNTOzQQP3zfQZbdyFP9dtdOPLo60';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config/supabase-config.js';
 
 // Criar cliente do Supabase
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    localStorage: globalThis.localStorage
-  }
-});
+let supabase;
+
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      localStorage: globalThis.localStorage
+    }
+  });
+} else {
+  logger.warn('Credenciais do Supabase não configuradas. Funcionalidades online desativadas.');
+  // Criar um cliente mock para evitar erros
+  supabase = {
+    auth: {
+      signInWithPassword: async () => ({ error: { message: 'Credenciais do Supabase não configuradas' } }),
+      signOut: async () => ({ error: null })
+    },
+    from: () => ({
+      select: () => ({ data: [], error: null })
+    })
+  };
+}
+
+// Tornar o cliente Supabase disponível globalmente para uso em páginas antigas
+window.chronosSupabase = supabase;
 
 // Inicializar a aplicação quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', async () => {
@@ -39,6 +55,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.PONTO_APP = app;
     window.SUPABASE_CLIENT = supabase;
     
+    // Garantir que o botão de login esteja visível antes de carregar componentes
+    ensureLoginButtonVisibility();
+    
     // Carregar componentes específicos da página
     await loadPageComponents();
     
@@ -52,6 +71,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     showInitializationError(error);
   }
 });
+
+/**
+ * Garantir que o botão de login esteja visível
+ */
+function ensureLoginButtonVisibility() {
+  // Garantir que o botão de login esteja visível na página de login
+  const loginButton = document.getElementById('loginBtn');
+  if (loginButton) {
+    loginButton.style.display = 'flex';
+    loginButton.style.visibility = 'visible';
+    loginButton.disabled = false;
+  }
+}
 
 /**
  * Carregar componentes específicos da página

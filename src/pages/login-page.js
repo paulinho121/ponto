@@ -20,8 +20,23 @@ class LoginPage {
   }
 
   init() {
+    // Garantir que o botão de login esteja visível
+    if (this.loginButton) {
+      this.loginButton.style.display = 'flex';
+      this.loginButton.disabled = false;
+      
+      // Remover qualquer listener anterior para evitar duplicatas
+      this.loginButton.replaceWith(this.loginButton.cloneNode(true));
+      this.loginButton = document.getElementById('loginBtn');
+      
+      // Adicionar listener para o clique no botão
+      this.loginButton.addEventListener('click', (e) => this.handleSubmit(e));
+    }
+    
     if (!this.form) {
       logger.warn('Formulário de login não encontrado na página');
+      // Se não encontrar o form, tentar usar os inputs diretamente
+      this.setupDirectInputs();
       return;
     }
 
@@ -33,20 +48,42 @@ class LoginPage {
       this.matriculaInput.addEventListener('input', () => this.handleInputChange());
     }
     if (this.senhaInput) {
-      this.senhaInput.addEventListener('input', () => this.handleInputChange());
+      this.senhaInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          this.handleSubmit(e);
+        }
+      });
     }
     
     logger.info('Página de login inicializada');
+  }
+  
+  setupDirectInputs() {
+    // Configurar eventos diretamente nos inputs se o form não estiver disponível
+    if (this.matriculaInput) {
+      this.matriculaInput.addEventListener('input', () => this.handleInputChange());
+    }
+    if (this.senhaInput) {
+      this.senhaInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          this.handleSubmit({ preventDefault: () => {} });
+        }
+      });
+    }
   }
 
   /**
    * Manipular submissão do formulário
    */
   async handleSubmit(event) {
-    event.preventDefault();
+    // Verificar se é um evento verdadeiro ou um objeto simulado
+    if (event && typeof event.preventDefault === 'function') {
+      event.preventDefault();
+    }
     
-    const matricula = this.matriculaInput?.value.trim();
-    const senha = this.senhaInput?.value.trim();
+    // Obter valores dos inputs
+    const matricula = this.matriculaInput?.value?.trim() || document.getElementById('matricula')?.value?.trim();
+    const senha = this.senhaInput?.value?.trim() || document.getElementById('senha')?.value?.trim();
     
     if (!matricula || !senha) {
       chronos.showAlert('Por favor, preencha todos os campos.', 'error');
@@ -56,17 +93,29 @@ class LoginPage {
     try {
       this.setLoading(true);
       
-      // Usar a função de compatibilidade para manter consistência
-      const result = await compatLogin(matricula, senha);
-      
-      logger.info('Login realizado com sucesso', { userId: result.user.id });
+      // Verificar se o sistema legado está disponível
+      if (window.ChronosState && typeof window.ChronosState.loginWithMatricula === 'function') {
+        // Usar o sistema legado
+        await window.ChronosState.loginWithMatricula(matricula, senha);
+      } else if (typeof compatLogin === 'function') {
+        // Usar a função de compatibilidade
+        const result = await compatLogin(matricula, senha);
+        logger.info('Login realizado com sucesso', { userId: result?.user?.id });
+      } else {
+        // Tentar usar o window.chronos se disponível
+        if (window.chronos && typeof window.chronos.login === 'function') {
+          await window.chronos.login(matricula, senha);
+        } else {
+          throw new Error('Sistema de login não disponível');
+        }
+      }
       
       // Redirecionar para a página principal
       this.redirectToMainPage();
       
     } catch (error) {
       logger.error('Erro no login', { error: error.message });
-      chronos.showAlert(`Erro no login: ${error.message}`, 'error');
+      chronos.showAlert(`Erro no login: ${error.message || 'Falha na autenticação'}`, 'error');
     } finally {
       this.setLoading(false);
     }
