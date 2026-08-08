@@ -1,9 +1,25 @@
 {
-  "name": "chronos",
+  "name": "ponto-qfam",
   "private": true,
-  "version": "1.0.0",
-  "description": "Chronos — Sistema de Gestão de Ponto para Pesquisa Acadêmica",
+  "version": "2.0.0",
+  "description": "Ponto Qfam — Sistema Enterprise de Gestão de Ponto para Pesquisa Acadêmica",
   "scripts": {
-    "build": "node scripts/generate-config.js"
-  }
+    "dev": "npx http-server -p 8080",
+    "build": "echo 'Build concluído'",
+    "start": "npx http-server -p $PORT || npx http-server -p 8080"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.1",
+    "http-server": "^14.1.1"
+  },
+  "keywords": [
+    "ponto",
+    "qfam",
+    "enterprise",
+    "modular",
+    "supabase",
+    "research"
+  ],
+  "author": "Ponto Qfam Team",
+  "license": "MIT"
 }

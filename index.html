@@ -15,9 +15,7 @@
   <meta name="apple-mobile-web-app-title" content="Ponto Qfam"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="supabase-client.js"></script>
-  <script src="chronos.js"></script>
+  <script type="module" src="src/main.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #faf8ff; -webkit-tap-highlight-color: transparent; }
@@ -137,9 +135,15 @@
 <script>
   // ── Se já está logado, vai direto pro painel ──────────────────────────────
   (async () => {
-    if (!window.chronosSupabase) return;
-    const session = await ChronosState.getSession();
-    if (session) window.location.replace('ponto.html');
+    if (window.PONTO_APP && window.PONTO_APP.isReady()) {
+      const authenticated = await window.PONTO_APP.getService('auth').isAuthenticated();
+      if (authenticated) window.location.replace('ponto.html');
+    } else {
+      // Fallback para compatibilidade
+      if (!window.chronosSupabase) return;
+      const session = await ChronosState.getSession();
+      if (session) window.location.replace('ponto.html');
+    }
   })();
 
   // ── Toggle senha ──────────────────────────────────────────────────────────
@@ -185,7 +189,13 @@
     errorBox.classList.add('hidden');
 
     try {
-      await ChronosState.loginWithMatricula(matricula, senha);
+      if (window.chronos) {
+        // Usar a nova arquitetura
+        await window.chronos.login(matricula, senha);
+      } else {
+        // Fallback para o sistema antigo
+        await ChronosState.loginWithMatricula(matricula, senha);
+      }
       btnIcon.classList.remove('animate-spin');
       btnIcon.textContent = 'check';
       btn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1">check_circle</span> Bem-vindo(a)!';
@@ -203,13 +213,25 @@
 
   // ── Suporte e Biometria (UI feedback) ────────────────────────────────────
   document.getElementById('btn-forgot').addEventListener('click', () => {
-    ChronosUI.showToast('Entre em contato com o suporte do laboratório.', 'info');
+    if (window.chronos) {
+      window.chronos.showAlert('Entre em contato com o suporte do laboratório.', 'info');
+    } else {
+      window.ChronosUI.showToast('Entre em contato com o suporte do laboratório.', 'info');
+    }
   });
   document.getElementById('btn-biometric').addEventListener('click', () => {
-    ChronosUI.showToast('Biometria disponível no app mobile.', 'info');
+    if (window.chronos) {
+      window.chronos.showAlert('Biometria disponível no app mobile.', 'info');
+    } else {
+      window.ChronosUI.showToast('Biometria disponível no app mobile.', 'info');
+    }
   });
   document.getElementById('btn-support').addEventListener('click', () => {
-    ChronosUI.showToast('Suporte: suporte@qfam.edu.br', 'info', 4000);
+    if (window.chronos) {
+      window.chronos.showAlert('Suporte: suporte@qfam.edu.br', 'info');
+    } else {
+      window.ChronosUI.showToast('Suporte: suporte@qfam.edu.br', 'info', 4000);
+    }
   });
 
   // ── Parallax sutil no card ────────────────────────────────────────────────
@@ -221,7 +243,9 @@
     card.style.transform = `translate(${(e.clientX - cx) / 60}px, ${(e.clientY - cy) / 60}px)`;
   });
 
-  ChronosUI.setupMicroInteractions();
+  if (window.ChronosUI) {
+    window.ChronosUI.setupMicroInteractions();
+  }
 </script>
 </body>
 </html>
