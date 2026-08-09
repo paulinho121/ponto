@@ -2,18 +2,16 @@
   "version": 2,
   "builds": [
     {
-      "src": "scripts/generate-config.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "**/*",
       "use": "@vercel/static"
     }
   ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "env": {
-    "SUPABASE_URL": "YOUR_SUPABASE_URL_HERE",
-    "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY_HERE"
-  }
+  "trailingSlash": false
 }
