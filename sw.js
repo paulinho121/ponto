@@ -4,8 +4,13 @@
  * instalação como PWA. Chamadas para o Supabase e CDNs externos passam
  * direto pela rede, sem interferência deste worker.
  */
-const CACHE_NAME = 'ponto-qfam-v2';
+const CACHE_NAME = 'ponto-qfam-v3';
 const APP_SHELL = [
+  'index.html',
+  'ponto.html',
+  'historico.html',
+  'perfil.html',
+  'admin.html',
   'chronos.js',
   'supabase-client.js',
   'manifest.webmanifest',
@@ -35,25 +40,44 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // Navegações (carregar uma página) passam direto pela rede: o Chrome não
-  // permite reencaminhar um request de navegação via fetch() dentro do worker
-  // (erro "'navigate' mode is unsupported"), e essas páginas dependem de dados
-  // sempre atualizados (sessão/Supabase) — não faz sentido cacheá-las aqui.
-  if (req.method !== 'GET' || req.mode === 'navigate') return;
-  if (new URL(req.url).origin !== self.location.origin) return;
-
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+  // Para páginas HTML, usamos estratégia network-first com fallback para cache
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then((response) => {
+          // Se a resposta for válida, armazena no cache
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(req, responseClone);
+            });
           }
-          return res;
+          return response;
         })
-        .catch(() => cached);
-      return cached || network;
-    })
-  );
+        .catch(() => {
+          // Se falhar, retorna do cache
+          return caches.match(req)
+            .then(response => response || caches.match('/index.html'));
+        })
+    );
+  } else if (req.method === 'GET' && new URL(req.url).origin === self.location.origin) {
+    // Para outros recursos do mesmo domínio, usamos cache-first
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            }
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+  } else {
+    // Para requisições externas, passa direto
+    return;
+  }
 });
