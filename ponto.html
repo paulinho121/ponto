@@ -17,12 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="init-system.js"></script>
-  <script type="module" src="src/main.js"></script>
   <script src="chronos.js"></script>
-  <script src="quick-diag.js"></script>
-  <script src="resolver-problems.js"></script>
-  <script src="security-check.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <style>
     body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -344,8 +339,6 @@
     const bar = document.getElementById('progress-bar');
     if (pct >= 100) {
       bar.className = 'h-full bg-tertiary-container rounded-full';
-    } else if (pct >= 70) {
-      bar.className = 'h-full bg-primary rounded-full';
     } else {
       bar.className = 'h-full bg-primary rounded-full';
     }
@@ -369,29 +362,28 @@
     lbl.textContent = 'Registrando...';
 
     try {
-      // Validação de localização — só se houver locais ativos cadastrados
+      // Localização só é coletada se houver locais ativos. A validação de
+      // distância é feita no servidor (RPC registrar_ponto, geofencing).
       const locais = await ChronosState.getActiveLocations();
+      let lat = null, lng = null;
       if (locais.length > 0) {
         lbl.textContent = 'Obtendo localização...';
         const pos = await ChronosUI.getCurrentPosition();
-        const maisProximo = locais
-          .map(l => ({ ...l, dist: ChronosState.distanceMeters(pos.latitude, pos.longitude, l.latitude, l.longitude) }))
-          .sort((a, b) => a.dist - b.dist)[0];
-        if (maisProximo.dist > maisProximo.raio_metros) {
-          const err = new Error(
-            `Você está a ${Math.round(maisProximo.dist)}m de "${maisProximo.nome}" ` +
-            `(raio permitido: ${maisProximo.raio_metros}m). Aproxime-se do local autorizado para bater o ponto.`
-          );
-          err.locationDenied = true;
-          throw err;
-        }
+        lat = pos.latitude;
+        lng = pos.longitude;
       }
 
       lbl.textContent = 'Registrando...';
       const now = ChronosUI.nowTime();
-      record = earlyLeave
-        ? await ChronosState.savePunches({ almoco: now, saida: now })
-        : await ChronosState.savePunch(action, now);
+
+      const { data, error } = await window.chronosSupabase.rpc('registrar_ponto', {
+        p_actions: earlyLeave ? ['almoco', 'saida'] : [action],
+        p_time: now,
+        p_latitude: lat,
+        p_longitude: lng,
+      });
+      if (error) throw error;
+      record = ChronosState._mapRecord(data);
 
       icon.classList.remove('animate-spin');
       btn.disabled = false;
@@ -408,10 +400,11 @@
     } catch (err) {
       icon.classList.remove('animate-spin');
       btn.disabled = false;
-      if (err.locationDenied) {
-        ChronosUI.showLocationDeniedModal(err.message);
+      const msg = err.message || 'tente novamente.';
+      if (msg.includes('Ponto negado')) {
+        ChronosUI.showLocationDeniedModal(msg);
       } else {
-        ChronosUI.showToast('Erro ao registrar ponto: ' + (err.message || 'tente novamente.'), 'error');
+        ChronosUI.showToast('Erro ao registrar ponto: ' + msg, 'error');
       }
       renderAll();
     }
