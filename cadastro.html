@@ -272,6 +272,13 @@
     btnIcon.classList.add('animate-spin');
 
     try {
+      // Impede cadastro de matrícula duplicada antes de criar a conta
+      const emailJaUsado = await window.chronosSupabase
+        .rpc('email_by_matricula', { p_matricula: matricula });
+      if (emailJaUsado) {
+        throw new Error('Esta matrícula já está cadastrada.');
+      }
+
       const result = await ChronosState.signUp({
         nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha,
       });
@@ -294,7 +301,7 @@
       btn.classList.remove('opacity-80');
       btnIcon.classList.remove('animate-spin');
       btnIcon.textContent = 'arrow_forward';
-      const msg = (err.message || '').includes('duplicate') && (err.message || '').includes('matricula')
+      const msg = (err.message || '').match(/já está cadastrada|duplicate|already exists|23505/i)
         ? 'Esta matrícula já está cadastrada.'
         : (err.message || 'Não foi possível criar a conta.');
       errorMsg.textContent = msg;

@@ -324,6 +324,85 @@ const ChronosState = {
     if (error) throw error;
   },
 
+  // ── Admin (super admin): usuários, pontos esquecidos e relatórios ────────
+  async listAllProfiles() {
+    const { data, error } = await window.chronosSupabase
+      .from('profiles').select('*').order('nome');
+    if (error) throw error;
+    return (data || []).map(r => this._mapProfile(r));
+  },
+
+  // Retorna o registro de ponto de um usuário em uma data (null se não houver)
+  async getPunchFor(userId, data) {
+    const { data: row, error } = await window.chronosSupabase
+      .from('ponto_registros').select('*')
+      .eq('user_id', userId).eq('data', data)
+      .maybeSingle();
+    if (error) throw error;
+    return row ? this._mapRecord(row) : { date: data, entrada: null, almoco: null, retorno: null, saida: null };
+  },
+
+  // Grava/atualiza o dia de ponto de um usuário como admin (ponto esquecido).
+  // Campos vazios são gravados como null (permite corrigir/limpar horários).
+  async saveAdminPunch({ userId, data, entrada, almoco, retorno, saida }) {
+    const payload = {
+      user_id: userId,
+      data,
+      entrada: entrada || null,
+      almoco:  almoco  || null,
+      retorno: retorno || null,
+      saida:   saida   || null,
+    };
+    const { data: row, error } = await window.chronosSupabase
+      .from('ponto_registros')
+      .upsert(payload, { onConflict: 'user_id,data' })
+      .select()
+      .single();
+    if (error) throw error;
+    return this._mapRecord(row);
+  },
+
+  // Registros de ponto com dados do usuário, dentro de um período (relatório)
+  async getRecordsForReport({ from, to, userId }) {
+    let query = window.chronosSupabase
+      .from('ponto_registros')
+      .select('*, profiles(nome, matricula)')
+      .gte('data', from)
+      .lte('data', to)
+      .order('data', { ascending: true });
+    if (userId) query = query.eq('user_id', userId);
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []).map(r => ({
+      userId:   r.user_id,
+      nome:     r.profiles?.nome || '',
+      matricula: r.profiles?.matricula || '',
+      date:     r.data,
+      entrada:  r.entrada ? r.entrada.slice(0, 5) : null,
+      almoco:   r.almoco  ? r.almoco.slice(0, 5)  : null,
+      retorno:  r.retorno ? r.retorno.slice(0, 5) : null,
+      saida:    r.saida   ? r.saida.slice(0, 5)   : null,
+    }));
+  },
+
+  // Duração trabalhada de um dia já gravado (minutos), sem usar o horário atual
+  calcDayMinutes(record) {
+    const toMin = t => (t ? t.split(':').slice(0, 2).map(Number).reduce((h, m) => h * 60 + m) : null);
+    let total = 0;
+    const entrada = toMin(record.entrada);
+    const almoco  = toMin(record.almoco);
+    const retorno = toMin(record.retorno);
+    const saida   = toMin(record.saida);
+    if (entrada !== null) {
+      const fimManha = almoco !== null ? almoco : saida;
+      if (fimManha !== null) total += Math.max(0, fimManha - entrada);
+    }
+    if (retorno !== null && saida !== null) {
+      total += Math.max(0, saida - retorno);
+    }
+    return total;
+  },
+
   // Distância entre duas coordenadas em metros (fórmula de Haversine)
   distanceMeters(lat1, lon1, lat2, lon2) {
     const R = 6371000;
