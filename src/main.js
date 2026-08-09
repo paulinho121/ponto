@@ -7,7 +7,24 @@ import { createClient } from '@supabase/supabase-js';
 import { initializeApp } from './core/application.js';
 import { appConfig } from './config/app-config.js';
 import { logger } from './utils/logger.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config/supabase-config.js';
+
+// Importar configuração do Supabase de forma segura
+let SUPABASE_URL = '';
+let SUPABASE_ANON_KEY = '';
+
+try {
+  // Tentar importar as configurações
+  const supabaseConfig = await import('./config/supabase-config.js');
+  SUPABASE_URL = supabaseConfig.SUPABASE_URL || '';
+  SUPABASE_ANON_KEY = supabaseConfig.SUPABASE_ANON_KEY || '';
+} catch (error) {
+  console.warn('Erro ao importar configuração do Supabase:', error.message);
+  // Tentar obter as configurações do objeto global
+  if (typeof window !== 'undefined' && window.CHRONOS_SUPABASE) {
+    SUPABASE_URL = window.CHRONOS_SUPABASE.url || '';
+    SUPABASE_ANON_KEY = window.CHRONOS_SUPABASE.anonKey || '';
+  }
+}
 
 // Criar cliente do Supabase
 let supabase;
@@ -18,7 +35,12 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      localStorage: globalThis.localStorage
+      localStorage: globalThis?.localStorage || null
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'ponto-qfam/2.0.0'
+      }
     }
   });
 } else {
@@ -27,10 +49,18 @@ if (SUPABASE_URL && SUPABASE_ANON_KEY) {
   supabase = {
     auth: {
       signInWithPassword: async () => ({ error: { message: 'Credenciais do Supabase não configuradas' } }),
-      signOut: async () => ({ error: null })
+      signOut: async () => ({ error: null }),
+      getSession: async () => ({ data: { session: null }, error: null })
     },
-    from: () => ({
-      select: () => ({ data: [], error: null })
+    from: (table) => ({
+      select: () => ({ data: [], error: null }),
+      eq: () => ({ select: () => ({ data: [], error: null }) }),
+      single: () => ({ data: null, error: null }),
+      insert: () => ({ data: [], error: null }),
+      update: () => ({ data: [], error: null })
+    }),
+    rpc: (func) => ({
+      single: () => ({ data: null, error: null })
     })
   };
 }

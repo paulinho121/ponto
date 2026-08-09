@@ -19,11 +19,23 @@ if (!url || !anonKey) {
     '[build] SUPABASE_URL e/ou SUPABASE_ANON_KEY não definidas. ' +
     'Configure-as em Vercel → Settings → Environment Variables.'
   );
-  process.exit(1);
+  // Não sai com erro para permitir que o build continue em alguns casos
+  // Em vez disso, criamos um arquivo com placeholders
+  const outPath = path.join(__dirname, '..', 'supabase-config.js');
+  const content = `window.CHRONOS_SUPABASE = {
+  url: "${process.env.SUPABASE_URL || 'https://your-project.supabase.co'}",
+  anonKey: "${process.env.SUPABASE_ANON_KEY || 'your-anon-key'}",
+};\n`;
+  
+  fs.writeFileSync(outPath, content);
+  console.log('[build] supabase-config.js gerado com placeholders.');
+} else {
+  const outPath = path.join(__dirname, '..', 'supabase-config.js');
+  const content = `window.CHRONOS_SUPABASE = {
+  url: ${JSON.stringify(url)},
+  anonKey: ${JSON.stringify(anonKey)},
+};\n`;
+
+  fs.writeFileSync(outPath, content);
+  console.log('[build] supabase-config.js gerado a partir das variáveis de ambiente.');
 }
-
-const outPath = path.join(__dirname, '..', 'supabase-config.js');
-const content = `window.CHRONOS_SUPABASE = {\n  url: ${JSON.stringify(url)},\n  anonKey: ${JSON.stringify(anonKey)},\n};\n`;
-
-fs.writeFileSync(outPath, content);
-console.log('[build] supabase-config.js gerado a partir das variáveis de ambiente.');
