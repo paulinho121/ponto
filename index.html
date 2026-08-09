@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Ponto Qfam — Login</title>
-  <meta name="description" content="Acesse o Ponto Qfam, sistema de gestão de ponto do laboratório."/>
+  <title>Ponto Lab — Login</title>
+  <meta name="description" content="Acesse o Ponto Lab, sistema de gestão de ponto do laboratório."/>
   <link rel="manifest" href="manifest.webmanifest"/>
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg"/>
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png"/>
   <link rel="apple-touch-icon" href="icons/icon-180.png"/>
-  <meta name="theme-color" content="#004ac6"/>
+  <meta name="theme-color" content="#132058"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="Ponto Qfam"/>
+  <meta name="apple-mobile-web-app-title" content="Ponto Lab"/>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
@@ -43,17 +43,10 @@
 
 <!-- Logo -->
 <header class="w-full pt-16 flex flex-col items-center z-10 fade-up">
-  <div class="w-14 h-14 bg-primary rounded-3xl flex items-center justify-center shadow-xl shadow-primary/25 mb-4 transition-transform hover:scale-105 duration-300">
-    <svg viewBox="0 0 100 100" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M26 50 L6 34 L16 50 L6 66 Z" fill="#ffffff"/>
-      <path d="M42 38 L50 22 L58 38 Z" fill="#ffffff"/>
-      <ellipse cx="50" cy="50" rx="24" ry="14" fill="#ffffff"/>
-      <rect x="32" y="44" width="34" height="4.5" rx="2.25" fill="#004ac6"/>
-      <rect x="32" y="53" width="34" height="4.5" rx="2.25" fill="#004ac6"/>
-      <circle cx="67" cy="46" r="3" fill="#004ac6"/>
-    </svg>
+  <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-xl shadow-primary/25 mb-4 transition-transform hover:scale-105 duration-300 overflow-hidden">
+    <img src="icons/icon-192.png" alt="Logo Ponto Lab" class="w-full h-full object-cover" width="192" height="192"/>
   </div>
-  <h1 class="text-display-lg font-bold text-on-surface tracking-tight">Ponto Qfam</h1>
+  <h1 class="text-display-lg font-bold text-on-surface tracking-tight">Ponto Lab</h1>
   <p class="text-body-md text-on-surface-variant mt-1">Laboratório Qfam</p>
 </header>
 
@@ -132,7 +125,7 @@
     <span class="text-label-sm uppercase tracking-widest text-on-surface-variant">Institucional</span>
     <div class="h-px w-8 bg-on-surface-variant"></div>
   </div>
-  <p class="text-label-sm text-on-surface-variant/50">Versão 2.0.0 • © 2026 Ponto Qfam</p>
+  <p class="text-label-sm text-on-surface-variant/50">Versão 2.0.0 • © 2026 Ponto Lab</p>
 </footer>
 
 <script>

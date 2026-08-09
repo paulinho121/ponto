@@ -1,10 +1,10 @@
 /**
- * Service Worker — Ponto Qfam
+ * Service Worker — Ponto Lab
  * Cache do app shell (arquivos estáticos do próprio site) para permitir
  * instalação como PWA. Chamadas para o Supabase e CDNs externos passam
  * direto pela rede, sem interferência deste worker.
  */
-const CACHE_NAME = 'ponto-qfam-v3';
+const CACHE_NAME = 'ponto-lab-v1';
 const APP_SHELL = [
   'index.html',
   'ponto.html',

@@ -1,4 +1,4 @@
-# Guia de Solução de Problemas - Ponto Qfam
+# Guia de Solução de Problemas - Ponto Lab
 
 Este guia ajuda a resolver os problemas mais comuns com o sistema de ponto.
 
@@ -72,7 +72,7 @@ if (window.chronosSupabase) {
 
 ## Procedimento Completo de Resolução
 
-1. **Feche todas as abas** do sistema Ponto Qfam
+1. **Feche todas as abas** do sistema Ponto Lab
 2. **Limpe o cache** do navegador (Ctrl+Shift+Del)
 3. **Reabra a página** e espere o carregamento completo
 4. **Abra o console do navegador** (F12)

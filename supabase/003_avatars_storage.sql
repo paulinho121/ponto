@@ -1,4 +1,4 @@
--- Ponto Qfam — Migração: bucket de fotos de perfil (avatares)
+-- Ponto Lab — Migração: bucket de fotos de perfil (avatares)
 -- Rode isto no Supabase Dashboard → SQL Editor.
 --
 -- Não-destrutivo e idempotente — seguro rodar mesmo com dados reais já no

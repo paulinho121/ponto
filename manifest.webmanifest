@@ -1,13 +1,13 @@
 {
-  "name": "Ponto Qfam",
-  "short_name": "Ponto Qfam",
-  "description": "Registro de ponto do laboratório Qfam.",
+  "name": "Ponto Lab",
+  "short_name": "Ponto Lab",
+  "description": "Registro de ponto do laboratório.",
   "start_url": "ponto.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#faf8ff",
-  "theme_color": "#004ac6",
+  "theme_color": "#132058",
   "lang": "pt-BR",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

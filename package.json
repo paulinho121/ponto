@@ -1,8 +1,8 @@
 {
-  "name": "ponto-qfam",
+  "name": "ponto-lab",
   "private": true,
   "version": "2.0.0",
-  "description": "Ponto Qfam — Sistema Enterprise de Gestão de Ponto para Pesquisa Acadêmica",
+  "description": "Ponto Lab — Sistema Enterprise de Gestão de Ponto para Pesquisa Acadêmica",
   "scripts": {
     "dev": "npx http-server -p 8080",
     "build": "node scripts/generate-config.js",
@@ -15,12 +15,12 @@
   },
   "keywords": [
     "ponto",
-    "qfam",
+    "lab",
     "enterprise",
     "modular",
     "supabase",
     "research"
   ],
-  "author": "Ponto Qfam Team",
+  "author": "Ponto Lab Team",
   "license": "MIT"
 }
