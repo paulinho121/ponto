@@ -1,5 +1,9 @@
-# Credenciais do Supabase — nunca commitar (use supabase-config.example.js como template)
-supabase-config.js
+# ── Segredos ──
+# NUNCA commitar: service_role key, senhas, .env, etc.
+# (a anon key + URL do Supabase ficam em supabase-config.js e SÃO commitadas,
+# pois são públicas por design — a segurança vem do Row Level Security)
+.env
+*.service-role.key
 
 # Vercel
 .vercel
