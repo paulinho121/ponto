@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(SUPABASE_URL=\"https://topsiocrsfnopttovfla.supabase.co\" SUPABASE_ANON_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcHNpb2Nyc2Zub3B0dG92ZmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNjQxNDgsImV4cCI6MjA5ODc0MDE0OH0.tqh278ymyqoZHz9oNTOzQQP3zfQZbdyFP9dtdOPLo60\" npm run build)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('vercel.json'\\)\\); console.log\\('vercel.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json'\\)\\); console.log\\('package.json OK'\\)\")",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(git config *)",
+      "Bash(git init *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(grep -i \"supabase-config.js$\")",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(node --check chronos.js)",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(node \"C:/Users/pauli/AppData/Local/Temp/claude/C--Users-pauli-Desktop-ponto-ponto-main/b4ca9844-06d9-45a3-acff-920c937dd642/scratchpad/icon-save-server.js\" \"C:/Users/pauli/Desktop/ponto/ponto-main/ponto-main/icons\")",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "Bash(taskkill //PID 5408 //F)",
+      "Bash(curl -sI http://localhost:3000/cadastro.html)",
+      "Bash(curl -sI http://localhost:3000/cadastro)",
+      "Bash(curl -sIL http://localhost:3000/cadastro.html)"
+    ]
+  }
+}
