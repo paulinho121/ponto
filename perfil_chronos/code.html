@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Perfil - Chronos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#002113",
+                    "on-primary-container": "#eeefff",
+                    "primary": "#004ac6",
+                    "inverse-on-surface": "#eef0ff",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#c9e6ff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#00174b",
+                    "inverse-surface": "#283044",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#2563eb",
+                    "surface-bright": "#faf8ff",
+                    "secondary": "#006591",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#737686",
+                    "secondary-container": "#39b8fd",
+                    "tertiary-container": "#007d55",
+                    "outline-variant": "#c3c6d7",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#bdffdb",
+                    "surface-container-highest": "#dae2fd",
+                    "on-surface": "#131b2e",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "surface-container-low": "#f2f3ff",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#006242",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "inverse-primary": "#b4c5ff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-surface-variant": "#434655",
+                    "surface-tint": "#0053db",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#001e2f",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-variant": "#dae2fd",
+                    "primary-fixed": "#dbe1ff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "background": "#faf8ff",
+                    "secondary-fixed-dim": "#89ceff",
+                    "on-secondary-container": "#004666",
+                    "surface": "#faf8ff",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "md": "16px",
+                    "container-margin": "20px",
+                    "base": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "label-xs": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "label-xs": ["10px", {"lineHeight": "12px", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background-color: currentColor;
+            border-radius: 50%;
+            margin-top: 4px;
+        }
+        body { -webkit-tap-highlight-color: transparent; }
+        .glass-header { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-surface/80 glass-header border-b border-outline-variant/30 px-container-margin h-16 flex justify-between items-center">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a young academic researcher in a clean, brightly lit laboratory environment. The subject has a confident expression and is wearing a white lab coat. The background features high-tech scientific equipment and soft blue and white tones, matching a premium academic UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGCf9OXTccGfVoLGPcpwskQg5udEdkZx4-2P7Bb4rfhfOfulXKXNvu9bmANue_5nHE4gEmvNTXuV3XLaYrnVXGwmVJcqEawI2MQQPb1MV1498HYz85N_jvGir2gZGi8BdjPKXl6GgNmvPYtb4opTKPeo6rMO__qyLiDWVkPGSfVpyT6HLYRvTtBfc-GYLvW6b51-5D_zHRSG7DsQE27IyekM94QVKlfdNRMYzV1xE_KBhHtnFJS66z"/>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Chronos</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-margin max-w-2xl mx-auto space-y-lg">
+<!-- Profile Header Section -->
+<section class="flex flex-col items-center text-center space-y-md">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A high-quality close-up portrait of a university researcher in a modern, minimalist campus setting. The lighting is soft and natural, emphasizing a bright, professional atmosphere. The color palette is composed of clean whites, subtle slates, and deep primary blues, reflecting a sophisticated academic identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkMVnPHUysmzwCvRj5gj_fpCqiwaINecn79BEx5KItYGy5ZAa0WCZXmsac3FSCReOWvKeFhzJb4qqlLPWJZR0S1i9aGqAw1GNrPUpi5q9Firy1LnJ3h91MpbQP7DhSt1YoSkYG5p9ztbn3BBSgdztdbGBJTBR8JZcnbYq0qSLeksSkSCmNNRfpGpbq9VWjmmJTNs3YHg4kc-Nn0cDi8mOElt180ITp7DUCiJotRLlh-YpsJzVtSn_r"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-on-primary p-xs rounded-full shadow-md border-2 border-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div class="space-y-base">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Mariana S. Cavalcante</h1>
+<p class="text-on-surface-variant font-body-md">Pesquisadora de Pós-Graduação</p>
+<div class="inline-flex items-center px-sm py-xs bg-tertiary-container/10 text-tertiary rounded-full">
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-label-sm">Perfil Verificado</span>
+</div>
+</div>
+</section>
+<!-- Information Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Lab Info Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary">biotech</span>
+<h3 class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Laboratório</h3>
+</div>
+<p class="font-title-md text-title-md text-on-surface">Lab. de Neurociência Aplicada (LNA)</p>
+</div>
+<!-- Advisor Info Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary">school</span>
+<h3 class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Orientador</h3>
+</div>
+<p class="font-title-md text-title-md text-on-surface">Dr. Ricardo Fontes</p>
+</div>
+<!-- Contact/Hours Detail List (Full Width) -->
+<div class="md:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-md shadow-sm divide-y divide-outline-variant/20">
+<div class="flex justify-between items-center py-sm first:pt-0">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">mail</span>
+<span class="text-on-surface-variant">Email</span>
+</div>
+<span class="text-on-surface font-medium">m.cavalcante@univ.edu.br</span>
+</div>
+<div class="flex justify-between items-center py-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">phone</span>
+<span class="text-on-surface-variant">Telefone</span>
+</div>
+<span class="text-on-surface font-medium">(11) 98765-4321</span>
+</div>
+<div class="flex justify-between items-center py-sm last:pb-0">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">schedule</span>
+<span class="text-on-surface-variant">Carga Horária</span>
+</div>
+<div class="text-right">
+<span class="text-on-surface font-bold">20h / semana</span>
+<div class="w-24 h-1.5 bg-outline-variant/30 rounded-full mt-1 overflow-hidden">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Buttons -->
+<section class="space-y-sm">
+<button class="w-full flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-200">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">person_edit</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Editar Perfil</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm hover:bg-surface-container-low transition-colors active:scale-[0.98] duration-200">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">lock_reset</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Alterar senha</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-center gap-sm p-md bg-error-container/20 text-error border border-error/10 rounded-xl shadow-sm hover:bg-error-container/30 transition-colors active:scale-[0.98] duration-200 mt-xl">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-title-md text-title-md">Sair da conta</span>
+</button>
+</section>
+<!-- Academic Badge / Disclaimer -->
+<footer class="pt-lg pb-xl text-center">
+<p class="text-label-sm font-label-sm text-outline uppercase tracking-widest">Chronos Research Management v2.4.0</p>
+</footer>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-surface/80 glass-header border-t border-outline-variant/20 h-20 px-container-margin pb-safe flex justify-around items-center shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low/50 transition-all p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label-sm text-label-sm mt-1">Ponto</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low/50 transition-all p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm mt-1">Histórico</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary relative active:scale-110 duration-300 ease-out p-2 rounded-lg after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for buttons
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.96)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = '';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+            });
+        });
+
+        // Soft reveal animation on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.querySelector('main');
+            mainContent.style.opacity = '0';
+            mainContent.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                mainContent.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'translateY(0)';
+            }, 50);
+        });
+    </script>
+</body></html>

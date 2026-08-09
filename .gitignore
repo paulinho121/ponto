@@ -1,0 +1,8 @@
+# Credenciais do Supabase — nunca commitar (use supabase-config.example.js como template)
+supabase-config.js
+
+# Vercel
+.vercel
+
+# Node
+node_modules

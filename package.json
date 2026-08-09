@@ -5,7 +5,8 @@
   "description": "Ponto Qfam — Sistema Enterprise de Gestão de Ponto para Pesquisa Acadêmica",
   "scripts": {
     "dev": "npx http-server -p 8080",
-    "build": "echo 'Build concluído'",
+    "build": "node scripts/generate-config.js",
+    "vercel-build": "node scripts/generate-config.js",
     "start": "npx http-server -p $PORT || npx http-server -p 8080"
   },
   "dependencies": {

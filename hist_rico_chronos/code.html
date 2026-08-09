@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Chronos - Histórico de Ponto</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#002113",
+                    "on-primary-container": "#eeefff",
+                    "primary": "#004ac6",
+                    "inverse-on-surface": "#eef0ff",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#c9e6ff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#00174b",
+                    "inverse-surface": "#283044",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#2563eb",
+                    "surface-bright": "#faf8ff",
+                    "secondary": "#006591",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#737686",
+                    "secondary-container": "#39b8fd",
+                    "tertiary-container": "#007d55",
+                    "outline-variant": "#c3c6d7",
+                    "on-secondary-fixed-variant": "#004c6e",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#bdffdb",
+                    "surface-container-highest": "#dae2fd",
+                    "on-surface": "#131b2e",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "surface-container-low": "#f2f3ff",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#006242",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "inverse-primary": "#b4c5ff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-surface-variant": "#434655",
+                    "surface-tint": "#0053db",
+                    "surface-dim": "#d2d9f4",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#001e2f",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-variant": "#dae2fd",
+                    "primary-fixed": "#dbe1ff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "background": "#faf8ff",
+                    "secondary-fixed-dim": "#89ceff",
+                    "on-secondary-container": "#004666",
+                    "surface": "#faf8ff",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "md": "16px",
+                    "container-margin": "20px",
+                    "base": "4px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "label-xs": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "label-xs": ["10px", {"lineHeight": "12px", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 flex justify-between items-center h-16 px-container-margin w-full">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden bg-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a research student with a friendly expression, captured in a clean, brightly lit academic setting with soft daylight and a minimal background of books and laboratory equipment. The style is modern, realistic, and high-fidelity, echoing a premium corporate and educational aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKE27GSprXSqzTZ-1Pz0KAEBPRn1_C5ePFZcTjcKp5lQByXe66TZsln1t7bGFJKLJgIrpIPUMDaDWdJrzzoujTlM1m4IMr4odF35DPY5gtD-3lpyo-Shuv1BJKadvI7kcoNLcPPEqnVPwOyYGIbcOtWtL0QcrOViUT4alci0MbvXPaH1MP_kH4QdHO1Wk34lW4RVYL3AksNX6xORWzGxvsN2KR9fhZBMuIg0sCoSpaT3jFbj3I8PYd"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Chronos</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-margin space-y-lg">
+<!-- Search and Month Filter Section -->
+<section class="space-y-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full h-12 pl-10 pr-4 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary transition-all" placeholder="Pesquisar registros..." type="text"/>
+</div>
+<!-- Month Selection Carousel -->
+<div class="flex gap-sm overflow-x-auto hide-scrollbar -mx-container-margin px-container-margin py-xs">
+<button class="px-md py-xs rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm whitespace-nowrap shadow-sm transition-all">Outubro</button>
+<button class="px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all">Setembro</button>
+<button class="px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all">Agosto</button>
+<button class="px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all">Julho</button>
+<button class="px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all">Junho</button>
+</div>
+</section>
+<!-- Stats Overview Card -->
+<div class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-md">
+<div class="flex justify-between items-center">
+<h3 class="font-title-md text-title-md text-on-surface">Resumo Mensal</h3>
+<span class="px-sm py-xs bg-tertiary/10 text-tertiary rounded-full font-label-xs text-label-xs">Carga Completa</span>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Total Mensal</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">168h 30m</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Faltantes</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-secondary font-bold">12h 00m</p>
+</div>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full w-[92%]" style="transition: width 1s ease-out"></div>
+</div>
+</div>
+<!-- Timeline Section -->
+<section class="space-y-md">
+<div class="flex justify-between items-center">
+<h2 class="font-title-md text-title-md text-on-surface">Registros</h2>
+<button class="text-primary font-label-sm text-label-sm flex items-center gap-xs">
+                    Filtrar <span class="material-symbols-outlined text-[16px]">filter_list</span>
+</button>
+</div>
+<!-- List of Daily Records -->
+<div class="space-y-sm">
+<!-- Day Record Card 1 -->
+<div class="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Out</span>
+<span class="font-title-md text-title-md text-on-surface">25</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Sexta-feira</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">08:00 - 12:00 | 13:15 - 17:30</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-bold text-on-surface">08h 15min</p>
+<span class="px-sm py-1 bg-tertiary/10 text-tertiary rounded-full font-label-xs text-label-xs">Completo</span>
+</div>
+</div>
+<!-- Day Record Card 2 -->
+<div class="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Out</span>
+<span class="font-title-md text-title-md text-on-surface">24</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Quinta-feira</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">08:10 - 12:05 | 13:00 - 17:15</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-bold text-on-surface">08h 10min</p>
+<span class="px-sm py-1 bg-tertiary/10 text-tertiary rounded-full font-label-xs text-label-xs">Completo</span>
+</div>
+</div>
+<!-- Day Record Card 3 (Incomplete/Warning) -->
+<div class="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Out</span>
+<span class="font-title-md text-title-md text-on-surface">23</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Quarta-feira</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">08:00 - 12:00 | 13:00 - 15:00</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-bold text-on-surface">06h 00min</p>
+<span class="px-sm py-1 bg-error/10 text-error rounded-full font-label-xs text-label-xs">Incompleto</span>
+</div>
+</div>
+<!-- Day Record Card 4 -->
+<div class="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Out</span>
+<span class="font-title-md text-title-md text-on-surface">22</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Terça-feira</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">07:55 - 12:10 | 13:30 - 17:30</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-bold text-on-surface">08h 15min</p>
+<span class="px-sm py-1 bg-tertiary/10 text-tertiary rounded-full font-label-xs text-label-xs">Completo</span>
+</div>
+</div>
+<!-- Empty Day / Day Off Record Card -->
+<div class="p-md bg-surface-container-low/50 border border-dashed border-outline-variant rounded-xl flex items-center justify-between opacity-60">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-surface-variant/20 flex flex-col items-center justify-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Out</span>
+<span class="font-title-md text-title-md text-on-surface">21</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Segunda-feira</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Feriado Acadêmico</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-bold text-on-surface">--h --min</p>
+<span class="px-sm py-1 bg-outline-variant/20 text-on-surface-variant rounded-full font-label-xs text-label-xs">Nenhum</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 backdrop-blur-xl border-t border-outline-variant/20 shadow-lg flex justify-around items-center h-20 px-container-margin pb-safe">
+<!-- Ponto (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low/50 transition-colors" href="#">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label-sm text-label-sm">Ponto</span>
+</a>
+<!-- Histórico (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 scale-110 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm">Histórico</span>
+</a>
+<!-- Perfil (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low/50 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.classList.add('active:scale-95');
+            });
+            el.addEventListener('mouseup', () => {
+                el.classList.remove('active:scale-95');
+            });
+        });
+
+        // Simple filtering simulation
+        const searchInput = document.querySelector('input');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.space-y-sm > div');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body></html>
