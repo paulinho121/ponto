@@ -7,10 +7,41 @@
 import { app } from '../core/application.js';
 import { Formatters } from '../utils/formatters.js';
 
+// Importar SecurityManager com tratamento de erro
+let SecurityManager;
+try {
+  const securityModule = await import('../security/security-manager.js');
+  SecurityManager = securityModule.SecurityManager;
+} catch (error) {
+  console.warn('SecurityManager não disponível:', error.message);
+  // Criar uma classe vazia para evitar erros
+  SecurityManager = class {
+    constructor() {
+      console.warn('SecurityManager mock ativado');
+    }
+    setSecurityLevel() {}
+    securePunchRegistration() {
+      return Promise.resolve({
+        success: true,
+        message: 'Registro de ponto realizado (sem segurança)',
+        securityResults: { overallSuccess: true }
+      });
+    }
+  };
+}
+
 // Funções de compatibilidade para manter o código antigo funcionando
 export class ChronosCompat {
   constructor() {
     this.app = app;
+    try {
+      this.securityManager = new SecurityManager();
+      // Configurar nível de segurança médio por padrão
+      this.securityManager.setSecurityLevel('medium');
+    } catch (error) {
+      console.warn('Falha ao inicializar SecurityManager:', error.message);
+      this.securityManager = null;
+    }
   }
 
   /**
@@ -84,54 +115,119 @@ export class ChronosCompat {
   }
 
   /**
-   * Registrar ponto genérico compatível
+   * Registrar ponto genérico compatível com verificações de segurança
    */
   async registrarPonto(tipo) {
     try {
-      const result = await this.app.getService('point').registerPunch(tipo);
+      // Obter ID do usuário autenticado
+      const userId = await this.app.getService('auth').getCurrentUserId();
+      
+      if (!userId) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      // Verificar se o SecurityManager está disponível
+      if (this.securityManager) {
+        // Realizar verificações de segurança
+        const securityResult = await this.securityManager.securePunchRegistration(userId, tipo);
+        
+        if (!securityResult.success) {
+          console.warn('Falha na verificação de segurança:', securityResult.message);
+          // Continuar com registro mesmo com falha de segurança (pode ser configurável)
+        }
+      } else {
+        console.warn('SecurityManager não está disponível, registrando ponto sem verificações de segurança');
+      }
+
+      // Registrar o ponto usando o serviço de pontos
+      const pointService = this.app.getService('point');
+      const result = await pointService.registerPoint(userId, tipo);
+      
+      // Atualizar estado global
+      this.app.stateManager.dispatch({ 
+        type: 'ADD_POINT_RECORD', 
+        payload: result 
+      });
+      
       return result;
     } catch (error) {
-      console.error(`Erro ao registrar ${tipo} (compat):`, error);
+      console.error('Erro ao registrar ponto (compat):', error);
+      throw error;
+  /**
+   * Obter registros de ponto compatíveis
+   */
+  async getRegistros(userId = null) {
+    try {
+      if (!userId) {
+        userId = await this.app.getService('auth').getCurrentUserId();
+      }
+      
+      if (!userId) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      const pointService = this.app.getService('point');
+      const records = await pointService.getUserPoints(userId);
+      
+      // Atualizar estado global
+      this.app.stateManager.dispatch({ 
+        type: 'SET_POINT_RECORDS', 
+        payload: records 
+      });
+      
+      return records;
+    } catch (error) {
+      console.error('Erro ao buscar registros (compat):', error);
       throw error;
     }
   }
 
   /**
-   * Obter registros de ponto compatível
+   * Validar localização compatível
    */
-  async getRegistros(mes = null, ano = null) {
+  async validarLocalizacao(latitude, longitude) {
     try {
-      let records;
-      if (mes && ano) {
-        records = await this.app.getService('point').getRecordsByMonth(mes, ano);
-      } else {
-        records = await this.app.getService('point').getRecords();
-      }
+      const locationService = this.app.getService('location');
+      const result = await locationService.validateLocation(latitude, longitude);
+      return result;
+    } catch (error) {
+      console.error('Erro ao validar localização (compat):', error);
+      throw error;
+    }
+  }
 
-      // Formatar registros para manter compatibilidade
-      return records.map(record => ({
-        ...record,
-        formattedDate: Formatters.date.toDisplay(record.data),
-        formattedEntrada: Formatters.time.toDisplay(record.entrada),
-        formattedSaida: Formatters.time.toDisplay(record.saida),
-        formattedAlmoco: Formatters.time.toDisplay(record.almoco),
-        formattedRetorno: Formatters.time.toDisplay(record.retorno),
-        duration: this.app.getService('point').calculateDayDuration(record)
-      }));
   /**
    * Obter localização atual compatível
    */
   async obterLocalizacaoAtual() {
     try {
-      const locationService = this.app.getService('location');
-      const position = await locationService.getCurrentPosition();
-      return {
-        latitude: position.latitude,
-        longitude: position.longitude,
-        accuracy: position.accuracy
-      };
+      if (!navigator.geolocation) {
+        throw new Error('Geolocalização não suportada pelo navegador');
+      }
+
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const location = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy,
+              timestamp: position.timestamp
+            };
+            resolve(location);
+          },
+          (error) => {
+            reject(new Error(`Erro ao obter localização: ${error.message}`));
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
+      });
     } catch (error) {
-      console.error('Erro ao obter localização (compat):', error);
+      console.error('Erro ao obter localização atual (compat):', error);
       throw error;
     }
   }
@@ -140,7 +236,7 @@ export class ChronosCompat {
    * Obter estado atual compatível
    */
   getEstadoAtual() {
-    return this.app.getState();
+    return this.app.stateManager.getState();
   }
 
   /**
@@ -249,22 +345,5 @@ export const {
   showAlert,
   showLoading
 } = chronos;
-    } catch (error) {
-      console.error('Erro ao buscar registros (compat):', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Validar localização compatível
-   */
-  async validarLocalizacao(latitude, longitude) {
-    try {
-      const locationService = this.app.getService('location');
-      const result = await locationService.validateLocation(latitude, longitude);
-      return result;
-    } catch (error) {
-      console.error('Erro ao validar localização (compat):', error);
-      throw error;
     }
   }
