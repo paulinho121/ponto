@@ -4,7 +4,7 @@
  * instalação como PWA. Chamadas para o Supabase e CDNs externos passam
  * direto pela rede, sem interferência deste worker.
  */
-const CACHE_NAME = 'ponto-lab-v1';
+const CACHE_NAME = 'ponto-lab-v2';
 const APP_SHELL = [
   'index.html',
   'ponto.html',
@@ -61,20 +61,18 @@ self.addEventListener('fetch', (event) => {
         })
     );
   } else if (req.method === 'GET' && new URL(req.url).origin === self.location.origin) {
-    // Para outros recursos do mesmo domínio, usamos cache-first
+    // Para outros recursos do mesmo domínio: network-first (sempre baixa a
+    // versão mais recente quando online; usa o cache apenas como fallback).
     event.respondWith(
-      caches.match(req).then((cached) => {
-        const network = fetch(req)
-          .then((res) => {
-            if (res && res.ok) {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-            }
-            return res;
-          })
-          .catch(() => cached);
-        return cached || network;
-      })
+      fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
     );
   } else {
     // Para requisições externas, passa direto
