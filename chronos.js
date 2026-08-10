@@ -190,6 +190,9 @@ const ChronosState = {
   },
 
   async updateAvatarUrl(url) {
+    if (!/^https?:\/\//i.test(String(url || ''))) {
+      throw new Error('URL de avatar inválida.');
+    }
     const user = this.getUser();
     const { data, error } = await window.chronosSupabase
       .from('profiles')
@@ -245,23 +248,6 @@ const ChronosState = {
       .maybeSingle();
     if (error) throw error;
     return data ? this._mapRecord(data) : this._createEmptyRecord();
-  },
-
-  async savePunch(action, time) {
-    return this.savePunches({ [action]: time });
-  },
-
-  // Registra múltiplos horários de uma vez (ex: almoço + saída, para quem
-  // encerra o dia na hora do almoço e não vai retornar).
-  async savePunches(fields) {
-    const user = this.getUser();
-    const { data, error } = await window.chronosSupabase
-      .from('ponto_registros')
-      .upsert({ user_id: user.id, data: this._todayStr(), ...fields }, { onConflict: 'user_id,data' })
-      .select()
-      .single();
-    if (error) throw error;
-    return this._mapRecord(data);
   },
 
   async getHistory() {
@@ -587,10 +573,19 @@ const ChronosUI = {
     return initials.toUpperCase();
   },
 
-  // Renderiza a foto do usuário no elemento (ou as iniciais, sem foto)
+  // Renderiza a foto do usuário no elemento (ou as iniciais, sem foto).
+  // Monta o <img> via createElement (nunca innerHTML) e só aceita URLs
+  // http/https — impede injeção de HTML/script via avatar_url.
   renderAvatar(element, name, avatarUrl) {
-    if (avatarUrl) {
-      element.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="Foto de perfil"/>`;
+    element.innerHTML = '';
+    const safeUrl = this.safeAvatarUrl(avatarUrl);
+    if (safeUrl) {
+      const img = document.createElement('img');
+      img.src = safeUrl;
+      img.alt = 'Foto de perfil';
+      img.className = 'w-full h-full object-cover';
+      img.referrerPolicy = 'no-referrer';
+      element.appendChild(img);
       return;
     }
     const initials = this.getInitialsAvatar(name);
@@ -598,6 +593,18 @@ const ChronosUI = {
       <div class="w-full h-full bg-primary flex items-center justify-center rounded-full">
         <span class="text-white font-bold text-sm">${initials}</span>
       </div>`;
+  },
+
+  // Aceita apenas URLs http/https como avatar. Bloqueia javascript:, data:,
+  // e qualquer esquema perigoso; retorna null quando não é segura.
+  safeAvatarUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    try {
+      const u = new URL(url, window.location.href);
+      return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : null;
+    } catch {
+      return null;
+    }
   },
 
   // Redimensiona uma imagem no navegador (canvas) antes do upload, evitando

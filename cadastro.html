@@ -235,6 +235,11 @@
       errorBox.classList.remove('hidden');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      errorMsg.textContent = 'Digite um e-mail válido.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
     if (senha.length < 6) {
       errorMsg.textContent = 'A senha deve ter pelo menos 6 caracteres.';
       errorBox.classList.remove('hidden');
@@ -294,9 +299,15 @@
       btn.classList.remove('opacity-80');
       btnIcon.classList.remove('animate-spin');
       btnIcon.textContent = 'arrow_forward';
-      const msg = (err.message || '').match(/já está cadastrada|duplicate|already exists|23505/i)
-        ? 'Esta matrícula já está cadastrada.'
-        : (err.message || 'Não foi possível criar a conta.');
+      const msgText = err.message || '';
+      let msg;
+      if (/e-mail|email/i.test(msgText) && /duplicate|already exists|taken|23505/i.test(msgText)) {
+        msg = 'Este e-mail já está cadastrado.';
+      } else if (/já está cadastrada|duplicate|already exists|taken|23505/i.test(msgText)) {
+        msg = 'Esta matrícula já está cadastrada.';
+      } else {
+        msg = msgText || 'Não foi possível criar a conta.';
+      }
       errorMsg.textContent = msg;
       errorBox.classList.remove('hidden');
     }

@@ -100,6 +100,46 @@
     </div>
   </div>
 
+  <!-- Card: Definir nova senha (chegou pelo link de recuperação) -->
+  <div id="reset-card" class="hidden">
+    <div class="bg-white/85 backdrop-blur-2xl border border-outline-variant/30 rounded-3xl p-8 shadow-2xl shadow-slate-200/60">
+      <div class="flex items-center gap-md mb-md">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary">lock_reset</span>
+        </div>
+        <div>
+          <h2 class="text-title-md font-bold text-on-surface">Definir nova senha</h2>
+          <p class="text-body-md text-on-surface-variant">Escolha uma nova senha para sua conta.</p>
+        </div>
+      </div>
+      <div id="reset-error" class="hidden mb-4 p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
+        <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings:'FILL' 1;">error</span>
+        <span class="text-body-md text-error" id="reset-error-msg"></span>
+      </div>
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <label class="text-label-sm text-on-surface-variant ml-1 block" for="reset-senha">Nova senha</label>
+          <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+            <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">lock</span>
+            <input id="reset-senha" class="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-body-md focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-outline-variant" placeholder="Mínimo 6 caracteres" type="password" autocomplete="new-password"/>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-label-sm text-on-surface-variant ml-1 block" for="reset-confirm">Confirmar nova senha</label>
+          <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+            <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">lock</span>
+            <input id="reset-confirm" class="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-body-md focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-outline-variant" placeholder="••••••••" type="password" autocomplete="new-password"/>
+          </div>
+        </div>
+        <button id="btn-set-password" type="button"
+          class="w-full h-14 bg-primary text-white text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          Salvar nova senha
+          <span class="material-symbols-outlined" id="set-password-icon">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Biometria / Suporte -->
   <div class="mt-8 flex justify-center items-center gap-6 text-on-surface-variant/60">
     <button type="button" class="flex flex-col items-center gap-2 hover:text-primary transition-colors group" id="btn-biometric">
@@ -128,19 +168,189 @@
   <p class="text-label-sm text-on-surface-variant/50">Versão 2.0.0 • © 2026 Ponto Lab</p>
 </footer>
 
+<!-- Modal: Esqueci minha senha -->
+<div id="forgot-modal" class="hidden fixed inset-0 z-[200] items-center justify-center bg-black/50 px-container-margin">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-lg space-y-md fade-up">
+    <div class="flex justify-between items-center">
+      <h2 class="text-title-md font-bold text-on-surface">Recuperar senha</h2>
+      <button id="btn-close-forgot" type="button" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors" aria-label="Fechar">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+    <p class="text-body-md text-on-surface-variant">Digite sua matrícula. Enviaremos um link de recuperação para o e-mail cadastrado.</p>
+    <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+      <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">badge</span>
+      <input id="forgot-matricula" class="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl text-body-md focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-outline-variant" placeholder="Nº da matrícula" type="text" autocomplete="off"/>
+    </div>
+    <div id="forgot-error" class="hidden p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
+      <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings:'FILL' 1;">error</span>
+      <span class="text-body-md text-error" id="forgot-error-msg"></span>
+    </div>
+    <button id="btn-send-reset" type="button" class="w-full h-12 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
+      <span class="material-symbols-outlined" id="send-reset-icon">mail</span>
+      Enviar link de recuperação
+    </button>
+  </div>
+</div>
+
 <script>
+  const loginCard = document.getElementById('login-card') || document.querySelector('main > div');
+  const resetCard = document.getElementById('reset-card');
+
+  // ── Fluxo de recuperação de senha (PASSWORD_RECOVERY) ─────────────────────
+  // Registra o listener primeiro: o supabase-js pode disparar o evento e limpar
+  // a hash do link antes do bloco abaixo ler a URL.
+  let recoveryMode = false;
+  if (window.chronosSupabase) {
+    window.chronosSupabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        recoveryMode = true;
+        loginCard.classList.add('hidden');
+        resetCard.classList.remove('hidden');
+      }
+    });
+  }
+
   // ── Se já está logado, vai direto pro painel ──────────────────────────────
   (async () => {
-    if (window.PONTO_APP && window.PONTO_APP.isReady()) {
-      const authenticated = await window.PONTO_APP.getService('auth').isAuthenticated();
-      if (authenticated) window.location.replace('ponto.html');
-    } else {
-      // Fallback para compatibilidade
-      if (!window.chronosSupabase) return;
-      const session = await ChronosState.getSession();
-      if (session) window.location.replace('ponto.html');
+    if (!window.chronosSupabase) return;
+    // Ler a hash ANTES de getSession(): o supabase-js limpa os parâmetros de
+    // token/recovery da URL quando processa a sessão, antes de emitir o evento.
+    const isRecoveryHash = (window.location.hash || '').includes('type=recovery');
+    const session = await ChronosState.getSession();
+    // Link de recuperação traz #access_token=...&type=recovery — nesse caso a
+    // página mostra o card de nova senha em vez de redirecionar pro painel.
+    if (recoveryMode || isRecoveryHash) {
+      if (session) {
+        loginCard.classList.add('hidden');
+        resetCard.classList.remove('hidden');
+      }
+      return;
     }
+    if (session) window.location.replace('ponto.html');
   })();
+
+  async function handleSetPassword() {
+    const errorBox = document.getElementById('reset-error');
+    const errorMsg = document.getElementById('reset-error-msg');
+    const btn      = document.getElementById('btn-set-password');
+    const icon     = document.getElementById('set-password-icon');
+    const senha    = document.getElementById('reset-senha').value;
+    const confirmar = document.getElementById('reset-confirm').value;
+
+    errorBox.classList.add('hidden');
+
+    if (!senha || senha.length < 6) {
+      errorMsg.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (senha !== confirmar) {
+      errorMsg.textContent = 'As senhas não coincidem.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    btn.disabled = true;
+    icon.textContent = 'sync';
+    icon.classList.add('animate-spin');
+
+    try {
+      const { error } = await window.chronosSupabase.auth.updateUser({ password: senha });
+      if (error) throw error;
+      await window.chronosSupabase.auth.signOut();
+      resetCard.classList.add('hidden');
+      loginCard.classList.remove('hidden');
+      document.getElementById('reset-senha').value = '';
+      document.getElementById('reset-confirm').value = '';
+      ChronosUI.showToast('Senha atualizada! Faça login com a nova senha.', 'success', 4000);
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Não foi possível alterar a senha.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      icon.classList.remove('animate-spin');
+      icon.textContent = 'arrow_forward';
+    }
+  }
+
+  document.getElementById('btn-set-password').addEventListener('click', handleSetPassword);
+
+  // ── Modal "Esqueci minha senha" ──────────────────────────────────────────
+  const forgotModal = document.getElementById('forgot-modal');
+
+  document.getElementById('btn-forgot').addEventListener('click', () => {
+    forgotModal.classList.remove('hidden');
+    forgotModal.classList.add('flex');
+    document.getElementById('forgot-matricula').focus();
+  });
+  document.getElementById('btn-close-forgot').addEventListener('click', closeForgotModal);
+  forgotModal.addEventListener('click', e => {
+    if (e.target === forgotModal) closeForgotModal();
+  });
+
+  function closeForgotModal() {
+    forgotModal.classList.add('hidden');
+    forgotModal.classList.remove('flex');
+    document.getElementById('forgot-error').classList.add('hidden');
+  }
+
+  async function sendResetEmail() {
+    const matricula = document.getElementById('forgot-matricula').value.trim();
+    const errorBox  = document.getElementById('forgot-error');
+    const errorMsg  = document.getElementById('forgot-error-msg');
+    const btn       = document.getElementById('btn-send-reset');
+    const icon      = document.getElementById('send-reset-icon');
+
+    errorBox.classList.add('hidden');
+
+    if (!matricula) {
+      errorMsg.textContent = 'Digite sua matrícula.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (!window.chronosSupabase) {
+      errorMsg.textContent = 'Configuração do Supabase ausente (supabase-config.js).';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    btn.disabled = true;
+    icon.textContent = 'sync';
+    icon.classList.add('animate-spin');
+
+    try {
+      // Traduz matrícula → e-mail. Mensagem genérica para não revelar se a
+      // matrícula existe (anti-enumeração).
+      const { data: email, error: rpcError } = await window.chronosSupabase
+        .rpc('email_by_matricula', { p_matricula: matricula });
+      if (rpcError) throw rpcError;
+      if (email) {
+        const redirectTo = window.location.origin + window.location.pathname;
+        const { error: sendError } = await window.chronosSupabase.auth
+          .resetPasswordForEmail(email, { redirectTo });
+        if (sendError) throw sendError;
+      }
+      closeForgotModal();
+      ChronosUI.showToast(
+        'Se encontramos essa matrícula, enviamos um link de recuperação para o e-mail cadastrado.',
+        'success',
+        5000
+      );
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Não foi possível enviar o e-mail. Tente novamente.';
+      errorBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      icon.classList.remove('animate-spin');
+      icon.textContent = 'mail';
+    }
+  }
+
+  document.getElementById('btn-send-reset').addEventListener('click', sendResetEmail);
+  document.getElementById('forgot-matricula').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendResetEmail();
+  });
 
   // ── Toggle senha ──────────────────────────────────────────────────────────
   function togglePassword() {
@@ -185,13 +395,7 @@
     errorBox.classList.add('hidden');
 
     try {
-      if (window.chronos) {
-        // Usar a nova arquitetura
-        await window.chronos.login(matricula, senha);
-      } else {
-        // Fallback para o sistema antigo
-        await ChronosState.loginWithMatricula(matricula, senha);
-      }
+      await ChronosState.loginWithMatricula(matricula, senha);
       btnIcon.classList.remove('animate-spin');
       btnIcon.textContent = 'check';
       btn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1">check_circle</span> Bem-vindo(a)!';
@@ -208,26 +412,11 @@
   }
 
   // ── Suporte e Biometria (UI feedback) ────────────────────────────────────
-  document.getElementById('btn-forgot').addEventListener('click', () => {
-    if (window.chronos) {
-      window.chronos.showAlert('Entre em contato com o suporte do laboratório.', 'info');
-    } else {
-      window.ChronosUI.showToast('Entre em contato com o suporte do laboratório.', 'info');
-    }
-  });
   document.getElementById('btn-biometric').addEventListener('click', () => {
-    if (window.chronos) {
-      window.chronos.showAlert('Biometria disponível no app mobile.', 'info');
-    } else {
-      window.ChronosUI.showToast('Biometria disponível no app mobile.', 'info');
-    }
+    window.ChronosUI.showToast('Biometria disponível no app mobile.', 'info');
   });
   document.getElementById('btn-support').addEventListener('click', () => {
-    if (window.chronos) {
-      window.chronos.showAlert('Suporte: suporte@qfam.edu.br', 'info');
-    } else {
-      window.ChronosUI.showToast('Suporte: suporte@qfam.edu.br', 'info', 4000);
-    }
+    window.ChronosUI.showToast('Suporte: suporte@qfam.edu.br', 'info', 4000);
   });
 
   // ── Parallax sutil no card ────────────────────────────────────────────────

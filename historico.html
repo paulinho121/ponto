@@ -137,7 +137,11 @@
 
   // ── Meses disponíveis ─────────────────────────────────────────────────────
   const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  let selectedMonth = new Date().getMonth(); // mês atual
+  function monthKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`;
+  }
+  // Mês/ano selecionado (ex: "2026-07"), para não misturar anos iguais.
+  let selectedKey = monthKey(new Date());
 
   function buildMonthTabs() {
     const container = document.getElementById('month-tabs');
@@ -145,15 +149,17 @@
     const now = new Date();
     for (let i = 0; i < 6; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const m = d.getMonth();
+      const key = monthKey(d);
+      const label = MONTHS_PT[d.getMonth()]
+        + (d.getFullYear() !== now.getFullYear() ? `/${String(d.getFullYear()).slice(2)}` : '');
       const btn = document.createElement('button');
-      btn.dataset.month = m;
-      btn.textContent = MONTHS_PT[m];
-      btn.className = m === selectedMonth
+      btn.dataset.key = key;
+      btn.textContent = label;
+      btn.className = key === selectedKey
         ? 'px-md py-xs rounded-full bg-primary text-on-primary text-label-sm font-semibold whitespace-nowrap shadow-sm transition-all'
         : 'px-md py-xs rounded-full bg-surface-container-highest text-on-surface-variant text-label-sm whitespace-nowrap hover:bg-surface-container-low transition-all';
       btn.addEventListener('click', () => {
-        selectedMonth = m;
+        selectedKey = key;
         buildMonthTabs();
         renderRecords();
       });
@@ -187,9 +193,16 @@
 
     const filtered = allRecords.filter(r => {
       const d = new Date(r.date);
-      if (d.getMonth() !== selectedMonth) return false;
+      if (monthKey(d) !== selectedKey) return false;
       if (filter) {
-        const text = `${r.weekday || ''} ${r.dia || ''} ${r.mes || ''}`.toLowerCase();
+        const text = [
+          d.toLocaleDateString('pt-BR'),
+          d.toLocaleDateString('pt-BR', { weekday: 'long' }),
+          r.entrada || '',
+          r.almoco  || '',
+          r.retorno || '',
+          r.saida   || '',
+        ].join(' ').toLowerCase();
         if (!text.includes(filter.toLowerCase())) return false;
       }
       return true;
