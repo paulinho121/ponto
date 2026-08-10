@@ -406,9 +406,7 @@
   });
 
   // ── Notificações ──────────────────────────────────────────────────────────
-  document.getElementById('btn-notifications').addEventListener('click', () => {
-    ChronosUI.showToast('Nenhuma notificação.', 'info');
-  });
+  ChronosUI.initNotifications();
 
   // ── Init ──────────────────────────────────────────────────────────────────
   renderProfile();

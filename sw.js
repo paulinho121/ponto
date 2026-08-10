@@ -13,6 +13,7 @@ const APP_SHELL = [
   'admin.html',
   'chronos.js',
   'supabase-client.js',
+  'notices.json',
   'manifest.webmanifest',
   'icons/icon.svg',
   'icons/icon-192.png',

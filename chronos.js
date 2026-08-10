@@ -637,6 +637,120 @@ const ChronosUI = {
       img.src = url;
     });
   },
+
+  // ── Notificações / avisos de versão ──────────────────────────────────────
+  // Os avisos ficam em notices.json (editado por mim a cada versão). O sino
+  // mostra um badge com o total de avisos ainda não lidos (guardado no
+  // localStorage) e abre o painel de avisos ao ser clicado.
+  NOTICES_URL: 'notices.json',
+  NOTICES_READ_KEY: 'chronos:notices:read',
+
+  escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  },
+
+  async fetchNotices() {
+    const res = await fetch(`${this.NOTICES_URL}?v=${Date.now()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data.notices) ? data.notices : [];
+  },
+
+  getReadNoticeKeys() {
+    try {
+      const raw = localStorage.getItem(this.NOTICES_READ_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  },
+
+  noticeKey(n) {
+    return `${n.version}:${n.title}`;
+  },
+
+  // Configura o sino: badge de não-lidos e abertura do painel de avisos.
+  async initNotifications(bellSelector = '#btn-notifications') {
+    const bell = document.querySelector(bellSelector);
+    if (!bell) return;
+
+    const badge = document.createElement('span');
+    badge.className = 'absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-error text-white text-[11px] font-bold flex items-center justify-center shadow';
+    badge.style.display = 'none';
+    bell.classList.add('relative');
+    bell.appendChild(badge);
+
+    let notices = [];
+    try {
+      notices = await this.fetchNotices();
+      const read = this.getReadNoticeKeys();
+      const unread = notices.filter((n) => !read.includes(this.noticeKey(n)));
+      if (unread.length > 0) {
+        badge.textContent = unread.length > 9 ? '9+' : String(unread.length);
+        badge.style.display = 'flex';
+      }
+    } catch (e) {
+      // offline ou arquivo ausente: sem badge, painel vazio
+    }
+
+    bell.addEventListener('click', () => this.showNoticesModal(notices));
+  },
+
+  // Abre o painel de atualizações e marca todos os avisos como lidos.
+  showNoticesModal(notices) {
+    const existing = document.getElementById('notices-modal');
+    if (existing) existing.remove();
+
+    const empty = !notices || notices.length === 0;
+    const items = (notices || []).map((n, i) => `
+      <div class="p-sm rounded-2xl bg-surface-container/60 border border-outline-variant/20 ${i > 0 ? 'mt-sm' : ''}">
+        <div class="flex items-center gap-sm flex-wrap">
+          <span class="text-label-sm font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">v${this.escapeHtml(n.version)}</span>
+          <span class="text-label-sm text-on-surface-variant">${this.escapeHtml(n.date)}</span>
+        </div>
+        <p class="mt-1 font-semibold text-on-surface">${this.escapeHtml(n.title)}</p>
+        ${n.body ? `<p class="mt-0.5 text-body-md text-on-surface-variant">${this.escapeHtml(n.body)}</p>` : ''}
+      </div>
+    `).join('');
+
+    const modal = document.createElement('div');
+    modal.id = 'notices-modal';
+    modal.className = 'fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-lg space-y-md fade-up max-h-[70vh] overflow-y-auto">
+        <div class="flex justify-between items-center">
+          <h2 class="text-title-md font-bold text-on-surface flex items-center gap-sm">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">notifications</span>
+            Atualizações
+          </h2>
+          <button id="btn-close-notices" type="button" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors" aria-label="Fechar">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        ${empty
+          ? '<p class="text-body-md text-on-surface-variant">Nenhuma notificação por enquanto.</p>'
+          : `<div>${items}</div>`}
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-notices').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    if (!empty) {
+      const read = this.getReadNoticeKeys();
+      notices.forEach((n) => {
+        const k = this.noticeKey(n);
+        if (!read.includes(k)) read.push(k);
+      });
+      localStorage.setItem(this.NOTICES_READ_KEY, JSON.stringify(read));
+      const badge = document.querySelector('#btn-notifications .absolute');
+      if (badge) badge.style.display = 'none';
+    }
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

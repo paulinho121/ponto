@@ -1,0 +1,10 @@
+{
+  "notices": [
+    {
+      "version": "2.1.0",
+      "date": "2026-08-09",
+      "title": "Nova versão 2.1.0",
+      "body": "Agora você pode recuperar sua senha pela tela de login (link \"Esqueci minha senha\"). Também reforçamos a segurança do cadastro e dos avatares."
+    }
+  ]
+}
