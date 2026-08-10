@@ -260,8 +260,11 @@
     const btn  = document.getElementById('btn-punch');
     if (action === 'done') {
       btn.disabled = true;
+      btn.classList.add('hidden');
       btn.classList.remove('animate-pulse-soft');
       btn.className = btn.className.replace(/bg-\w+-?\w* shadow-\w+-?\w*\/\d+/g,'');
+    } else {
+      btn.classList.remove('hidden');
     }
     btn.className = btn.className.replace(/(bg-\w+(-\w+)? )|(shadow-\w+(-\w+)?\/\d+ )/g,'');
     const colorParts = cfg.color.split(' ');
