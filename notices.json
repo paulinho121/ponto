@@ -1,6 +1,12 @@
 {
   "notices": [
     {
+      "version": "2.2.0",
+      "date": "2026-08-10",
+      "title": "Novos super administradores",
+      "body": "Jéssica Bezerra Maciel (jsmaciel9@gmail.com) e Naubert Bezerra (naubert.melo@aluno.uece.br) agora são super administradores do sistema, com acesso à aba de administração e aos relatórios."
+    },
+    {
       "version": "2.1.0",
       "date": "2026-08-09",
       "title": "Nova versão 2.1.0",
