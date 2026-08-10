@@ -231,10 +231,13 @@
             <option value="name">Nome (A–Z)</option>
           </select>
         </div>
-        <label for="rep-incomplete" class="h-12 px-md flex items-center gap-sm bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md cursor-pointer select-none">
-          <input id="rep-incomplete" type="checkbox" class="w-4 h-4 accent-primary"/>
-          <span class="truncate">Sem saída registrada</span>
-        </label>
+        <div class="space-y-xs">
+          <span class="text-label-sm text-on-surface-variant ml-1 block">Jornada</span>
+          <label for="rep-incomplete" class="h-12 px-md flex items-center gap-sm bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md cursor-pointer select-none">
+            <input id="rep-incomplete" type="checkbox" class="w-4 h-4 accent-primary"/>
+            <span class="truncate">Sem saída registrada</span>
+          </label>
+        </div>
       </div>
 
       <button id="rep-generate" type="button" class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
@@ -697,37 +700,58 @@
     tbody.innerHTML = html;
   }
 
-  async function generateReport() {
+  // Consulta o banco e renderiza o relatório. A busca por nome/matrícula é
+  // aplicada client-side sobre o período todo, então funciona mesmo antes de
+  // clicar "Gerar Relatório" e pesquisa entre todos os pesquisadores.
+  async function queryReport({ silent = false } = {}) {
     const from = $('rep-from').value;
     const to = $('rep-to').value;
     if (!from || !to) {
-      ChronosUI.showToast('Selecione o período do relatório.', 'error');
+      if (!silent) ChronosUI.showToast('Selecione o período do relatório.', 'error');
       return;
     }
     const btn = $('rep-generate');
     const icon = $('rep-generate-icon');
-    btn.disabled = true;
-    icon.textContent = 'sync';
-    icon.classList.add('animate-spin');
+    if (!silent) {
+      btn.disabled = true;
+      icon.textContent = 'sync';
+      icon.classList.add('animate-spin');
+    }
 
     try {
-      repRecords = await ChronosState.getRecordsForReport({ from, to, userId: $('rep-user').value || undefined });
+      repRecords = await ChronosState.getRecordsForReport({
+        from,
+        to,
+        userId: $('rep-user').value || undefined,
+      });
       renderSummary();
       renderTable();
-      ChronosUI.showToast(`Relatório gerado: ${repRecords.length} registro(s).`, 'success');
+      if (!silent) ChronosUI.showToast(`Relatório gerado: ${repRecords.length} registro(s).`, 'success');
     } catch (err) {
-      ChronosUI.showToast('Erro ao gerar relatório: ' + (err.message || ''), 'error');
+      if (!silent) ChronosUI.showToast('Erro ao gerar relatório: ' + (err.message || ''), 'error');
     } finally {
-      btn.disabled = false;
-      icon.classList.remove('animate-spin');
-      icon.textContent = 'bar_chart';
+      if (!silent) {
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+        icon.textContent = 'bar_chart';
+      }
     }
   }
 
-  $('rep-generate').addEventListener('click', generateReport);
+  $('rep-generate').addEventListener('click', () => queryReport());
 
-  // Busca, ordenação e filtro "sem saída" re-renderizam na hora.
-  ['rep-search', 'rep-incomplete', 'rep-sort'].forEach(id => {
+  // Busca por nome/matrícula: filtra na hora o que já está carregado e, após
+  // digitar (debounce), consulta o banco para cobrir todos os pesquisadores —
+  // inclusive se o relatório ainda não foi gerado.
+  let searchTimer = null;
+  $('rep-search').addEventListener('input', () => {
+    refreshReportView();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => queryReport({ silent: true }), 450);
+  });
+
+  // Ordenação e filtro "sem saída" re-renderizam na hora.
+  ['rep-incomplete', 'rep-sort'].forEach(id => {
     $(id).addEventListener('input', refreshReportView);
   });
 

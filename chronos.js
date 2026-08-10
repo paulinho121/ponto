@@ -349,7 +349,7 @@ const ChronosState = {
   },
 
   // Registros de ponto com dados do usuário, dentro de um período (relatório)
-  async getRecordsForReport({ from, to, userId }) {
+  async getRecordsForReport({ from, to, userId } = {}) {
     let query = window.chronosSupabase
       .from('ponto_registros')
       .select('*, profiles(nome, matricula)')
