@@ -216,6 +216,27 @@
         </select>
       </div>
 
+      <div class="relative flex items-center group input-focus-ring rounded-2xl transition-all">
+        <span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-primary transition-colors">search</span>
+        <input id="rep-search" class="w-full h-12 pl-12 pr-4 bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all placeholder:text-outline-variant" placeholder="Buscar por nome ou matrícula" type="search" autocomplete="off"/>
+      </div>
+
+      <div class="grid grid-cols-2 gap-md">
+        <div class="space-y-xs">
+          <label class="text-label-sm text-on-surface-variant ml-1 block" for="rep-sort">Ordenar por</label>
+          <select id="rep-sort" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all">
+            <option value="date-desc">Data (mais recente)</option>
+            <option value="date-asc">Data (mais antiga)</option>
+            <option value="hours-desc">Total de horas (maior)</option>
+            <option value="name">Nome (A–Z)</option>
+          </select>
+        </div>
+        <label for="rep-incomplete" class="h-12 px-md flex items-center gap-sm bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md cursor-pointer select-none">
+          <input id="rep-incomplete" type="checkbox" class="w-4 h-4 accent-primary"/>
+          <span class="truncate">Sem saída registrada</span>
+        </label>
+      </div>
+
       <button id="rep-generate" type="button" class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
         <span class="material-symbols-outlined" id="rep-generate-icon">bar_chart</span>
         Gerar Relatório
@@ -226,7 +247,7 @@
 
     <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden slide-up" style="animation-delay:.05s">
       <div class="flex justify-between items-center p-md border-b border-outline-variant/30">
-        <h2 class="text-title-md font-semibold text-on-surface">Resultado</h2>
+        <h2 class="text-title-md font-semibold text-on-surface">Resultado <span id="rep-count" class="text-label-sm text-on-surface-variant font-normal"></span></h2>
         <button id="rep-export" type="button" disabled
           class="h-10 px-md rounded-xl border border-primary/30 text-primary text-label-sm font-semibold hover:bg-primary/5 transition-colors flex items-center gap-1 disabled:opacity-40 disabled:pointer-events-none">
           <span class="material-symbols-outlined text-[16px]">download</span>
@@ -572,11 +593,51 @@
     return `${h}h ${String(m).padStart(2, '0')}min`;
   }
 
+  // Aplica busca por nome/matrícula, filtro "sem saída" e ordenação sobre os
+  // registros já carregados do relatório (repRecords).
+  function getFilteredRecords() {
+    const q = ($('rep-search').value || '').trim().toLowerCase();
+    const incompleteOnly = $('rep-incomplete').checked;
+    let rows = repRecords;
+    if (q) {
+      rows = rows.filter(r =>
+        (r.nome || '').toLowerCase().includes(q) ||
+        (r.matricula || '').toLowerCase().includes(q)
+      );
+    }
+    if (incompleteOnly) rows = rows.filter(r => !r.saida);
+    rows = [...rows];
+    const sort = $('rep-sort').value;
+    switch (sort) {
+      case 'date-asc':
+        rows.sort((a, b) => a.date.localeCompare(b.date));
+        break;
+      case 'hours-desc':
+        rows.sort((a, b) => ChronosState.calcDayMinutes(b) - ChronosState.calcDayMinutes(a));
+        break;
+      case 'name':
+        rows.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        break;
+      default:
+        rows.sort((a, b) => b.date.localeCompare(a.date));
+    }
+    return rows;
+  }
+
+  // Re-renderiza resumo e tabela ao mudar busca/filtros/ordenação (sem refazer
+  // a consulta). O resumo reflete a visão filtrada.
+  function refreshReportView() {
+    if (repRecords.length === 0) return;
+    renderSummary();
+    renderTable();
+  }
+
   function renderSummary() {
     const wrap = $('rep-summary');
-    const days = repRecords.length;
-    const totalMin = repRecords.reduce((acc, r) => acc + ChronosState.calcDayMinutes(r), 0);
-    const daysComEntrada = repRecords.filter(r => r.entrada).length;
+    const rows = getFilteredRecords();
+    const days = rows.length;
+    const totalMin = rows.reduce((acc, r) => acc + ChronosState.calcDayMinutes(r), 0);
+    const daysComEntrada = rows.filter(r => r.entrada).length;
     const media = daysComEntrada ? Math.round(totalMin / daysComEntrada) : 0;
 
     const cards = [
@@ -602,20 +663,24 @@
     const empty = $('rep-empty');
     const tableWrap = $('rep-table-wrap');
     const exportBtn = $('rep-export');
+    const countEl = $('rep-count');
 
+    const rows = getFilteredRecords();
     tbody.innerHTML = '';
-    if (repRecords.length === 0) {
+    if (rows.length === 0) {
       empty.classList.remove('hidden');
       tableWrap.classList.add('hidden');
       exportBtn.disabled = true;
+      countEl.textContent = '';
       $('rep-summary').classList.add('hidden');
       return;
     }
     empty.classList.add('hidden');
     tableWrap.classList.remove('hidden');
     exportBtn.disabled = false;
+    countEl.textContent = `${rows.length} registro(s)`;
 
-    const rows = repRecords.map(r => {
+    const html = rows.map(r => {
       const min = ChronosState.calcDayMinutes(r);
       return `
         <tr class="border-t border-outline-variant/30 hover:bg-surface-container-low/60 transition-colors">
@@ -629,7 +694,7 @@
           <td class="px-md py-sm whitespace-nowrap text-right font-semibold ${min > 0 ? '' : 'text-on-surface-variant'}">${min > 0 ? fmtHours(min) : '—'}</td>
         </tr>`;
     }).join('');
-    tbody.innerHTML = rows;
+    tbody.innerHTML = html;
   }
 
   async function generateReport() {
@@ -661,10 +726,16 @@
 
   $('rep-generate').addEventListener('click', generateReport);
 
+  // Busca, ordenação e filtro "sem saída" re-renderizam na hora.
+  ['rep-search', 'rep-incomplete', 'rep-sort'].forEach(id => {
+    $(id).addEventListener('input', refreshReportView);
+  });
+
   $('rep-export').addEventListener('click', () => {
-    if (repRecords.length === 0) return;
+    const rows = getFilteredRecords();
+    if (rows.length === 0) return;
     const header = 'Data;Usuário;Matrícula;Entrada;Almoço;Retorno;Saída;Total';
-    const lines = repRecords.map(r => {
+    const lines = rows.map(r => {
       const min = ChronosState.calcDayMinutes(r);
       const date = fmtTime(r.date).split('-').reverse().join('/');
       return [
