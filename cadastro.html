@@ -386,7 +386,9 @@
       btnIcon.textContent = 'arrow_forward';
       const msgText = err.message || '';
       let msg;
-      if (/convite/i.test(msgText) && /utilizado|já foi/i.test(msgText)) {
+      if (/rate limit/i.test(msgText)) {
+        msg = 'O envio de e-mails atingiu um limite temporário. Aguarde alguns minutos e tente novamente. Se continuar, avise o administrador.';
+      } else if (/convite/i.test(msgText) && /utilizado|já foi/i.test(msgText)) {
         msg = 'Este convite já foi utilizado. Peça um novo link.';
       } else if (/convite/i.test(msgText) && /expirad/i.test(msgText)) {
         msg = 'Convite expirado. Peça a um super administrador um novo link.';
