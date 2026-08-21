@@ -689,6 +689,51 @@ const ChronosUI = {
     });
   },
 
+  // Melhor localização possível num curto intervalo. Uma única leitura de GPS
+  // costuma devolver o PRIMEIRO fixo disponível (Wi-Fi/celular, impreciso, com
+  // centenas/milhares de metros de erro) antes de o GPS travar. Aqui usamos
+  // watchPosition por até maxWait ms, guardando a leitura mais precisa, e
+  // resolvemos assim que chega uma boa o suficiente (accuracy <= goodEnough).
+  // Isso reduz muito o falso "você está distante do local".
+  getBestPosition({ maxWait = 9000, goodEnough = 50 } = {}) {
+    const ERROR_MESSAGES = {
+      1: 'Permissão de localização negada. Habilite o acesso à localização no navegador.',
+      2: 'Não foi possível determinar sua localização (sinal de GPS indisponível).',
+      3: 'Tempo esgotado ao tentar obter sua localização.',
+    };
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocalização não é suportada neste navegador.'));
+        return;
+      }
+      let best = null, done = false, watchId = null;
+      const finish = (err) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        if (watchId !== null) { try { navigator.geolocation.clearWatch(watchId); } catch (e) {} }
+        if (best) resolve(best);
+        else reject(err || new Error('Não foi possível obter sua localização.'));
+      };
+      const timer = setTimeout(() => finish(), maxWait);
+      try {
+        watchId = navigator.geolocation.watchPosition(
+          pos => {
+            const c = pos.coords;
+            if (!best || c.accuracy < best.accuracy) {
+              best = { latitude: c.latitude, longitude: c.longitude, accuracy: c.accuracy };
+            }
+            if (best.accuracy <= goodEnough) finish(); // já é preciso o bastante
+          },
+          err => { if (!best) finish(new Error(ERROR_MESSAGES[err.code] || 'Não foi possível obter sua localização.')); },
+          { enableHighAccuracy: true, timeout: maxWait, maximumAge: 0 }
+        );
+      } catch (e) {
+        finish(e);
+      }
+    });
+  },
+
   // Avatar padrão (iniciais do nome)
   getInitialsAvatar(name, size = 40) {
     const parts = (name || 'Usuário').trim().split(' ');
