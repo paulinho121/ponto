@@ -65,6 +65,10 @@
       <span class="material-symbols-outlined text-[20px]">person_add</span>
       <span class="text-label-sm font-semibold">Convites</span>
     </button>
+    <button id="tab-usuarios" type="button" data-panel="usuarios" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+      <span class="text-label-sm font-semibold">Usuários</span>
+    </button>
   </div>
 </nav>
 
@@ -353,6 +357,33 @@
       <div id="invites-empty" class="hidden text-center py-xl">
         <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">mail</span>
         <p class="text-body-md text-on-surface-variant mt-2">Nenhum convite emitido ainda.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ ABA 5: USUÁRIOS ════════════ -->
+  <section id="panel-usuarios" class="tab-panel hidden space-y-lg">
+    <div class="space-y-md slide-up">
+      <div>
+        <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
+          <span class="material-symbols-outlined text-primary">manage_accounts</span>
+          Super administradores
+        </h2>
+        <p class="text-label-sm text-on-surface-variant mt-1">
+          Conceda ou remova o acesso de super administrador. Quem for super admin passa a ver este painel.
+        </p>
+      </div>
+
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+        <input id="usr-search" type="text" placeholder="Buscar por nome ou matrícula"
+          class="w-full h-12 pl-10 pr-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/>
+      </div>
+
+      <div id="usuarios-list" class="space-y-sm"></div>
+      <div id="usuarios-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">group_off</span>
+        <p class="text-body-md text-on-surface-variant mt-2">Nenhum usuário encontrado.</p>
       </div>
     </div>
   </section>
@@ -1021,10 +1052,84 @@
     });
   }
 
+  // ════════════ ABA 5: USUÁRIOS (promover super admin) ════════════
+  let usrFiltro = '';
+
+  function renderUsuarios() {
+    const list  = $('usuarios-list');
+    const empty = $('usuarios-empty');
+    list.innerHTML = '';
+
+    const termo = usrFiltro.trim().toLowerCase();
+    const filtrados = perfis.filter(p => {
+      if (!termo) return true;
+      return (p.nome || '').toLowerCase().includes(termo)
+          || (p.matricula || '').toLowerCase().includes(termo);
+    });
+
+    if (filtrados.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    filtrados.forEach(p => {
+      const ehVoce = p.id === user.id;
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm flex items-center justify-between gap-md';
+
+      const acao = ehVoce
+        ? `<span class="px-sm py-1.5 rounded-full text-label-xs font-semibold bg-surface-container-high text-on-surface-variant">Você</span>`
+        : p.isAdmin
+          ? `<button class="btn-usr-toggle h-9 px-md rounded-full text-label-sm font-semibold border border-error/40 text-error hover:bg-error/10 transition-colors flex items-center gap-1" data-id="${p.id}" data-admin="true" data-nome="${(p.nome || '').replace(/"/g, '&quot;')}">
+              <span class="material-symbols-outlined text-[16px]">remove_moderator</span> Remover
+            </button>`
+          : `<button class="btn-usr-toggle h-9 px-md rounded-full text-label-sm font-semibold border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1" data-id="${p.id}" data-admin="false" data-nome="${(p.nome || '').replace(/"/g, '&quot;')}">
+              <span class="material-symbols-outlined text-[16px]">add_moderator</span> Tornar admin
+            </button>`;
+
+      card.innerHTML = `
+        <div class="min-w-0">
+          <p class="font-semibold text-on-surface truncate">${p.nome || 'Sem nome'}</p>
+          <p class="text-label-sm text-on-surface-variant truncate">${p.matricula || '—'}${p.categoria ? ' • ' + p.categoria : ''}</p>
+          ${p.isAdmin ? `<span class="inline-block mt-1 px-sm py-0.5 rounded-full text-label-xs font-semibold bg-primary/10 text-primary">Super admin</span>` : ''}
+        </div>
+        <div class="flex-shrink-0">${acao}</div>
+      `;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.btn-usr-toggle').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const eraAdmin = btn.dataset.admin === 'true';
+        const nome = btn.dataset.nome || 'este usuário';
+        const msg = eraAdmin
+          ? `Remover o acesso de super administrador de ${nome}?`
+          : `Conceder acesso de super administrador a ${nome}? Ele passará a ver o painel de administração.`;
+        if (!confirm(msg)) return;
+
+        btn.disabled = true;
+        try {
+          await ChronosState.setUserAdmin(id, !eraAdmin);
+          await loadProfiles();       // recarrega a lista com o novo estado
+          renderUsuarios();
+          ChronosUI.showToast(eraAdmin ? 'Acesso de super admin removido.' : 'Usuário promovido a super admin!', 'success');
+        } catch (err) {
+          btn.disabled = false;
+          ChronosUI.showToast(err.message || 'Não foi possível alterar o privilégio.', 'error');
+        }
+      });
+    });
+  }
+
+  $('usr-search').addEventListener('input', e => { usrFiltro = e.target.value; renderUsuarios(); });
+
   // ── Init ──────────────────────────────────────────────────────────────────
   await loadProfiles();
   await renderLocations();
   await renderInvites();
+  renderUsuarios();
   switchTab('pontos');
   ChronosUI.setupMicroInteractions();
 })();

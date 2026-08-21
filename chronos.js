@@ -351,6 +351,14 @@ const ChronosState = {
   },
 
   // ── Admin (super admin): usuários, pontos esquecidos e relatórios ────────
+  // Promove (ou rebaixa) outro usuário a super administrador. O RPC valida
+  // que quem chama é admin e impede remover o próprio acesso.
+  async setUserAdmin(userId, isAdmin) {
+    const { error } = await window.chronosSupabase
+      .rpc('set_user_admin', { p_user_id: userId, p_is_admin: isAdmin });
+    if (error) throw new Error(error.message || 'Não foi possível alterar o privilégio.');
+  },
+
   async listAllProfiles() {
     const { data, error } = await window.chronosSupabase
       .from('profiles').select('*').order('nome');

@@ -108,17 +108,15 @@
               placeholder="Nº da Matrícula" type="text" required autocomplete="off"/>
           </div>
           <div class="space-y-xs">
-            <label class="text-label-sm text-on-surface-variant ml-1 block">Categoria *</label>
-            <div class="flex items-center gap-lg h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl">
-              <label class="flex items-center gap-xs cursor-pointer group">
-                <input class="w-5 h-5 accent-primary" name="category" type="radio" value="IC" checked/>
-                <span class="text-body-md text-on-surface group-hover:text-primary transition-colors">IC</span>
-              </label>
-              <label class="flex items-center gap-xs cursor-pointer group">
-                <input class="w-5 h-5 accent-primary" name="category" type="radio" value="PG"/>
-                <span class="text-body-md text-on-surface group-hover:text-primary transition-colors">Pós-Graduação</span>
-              </label>
-            </div>
+            <label class="text-label-sm text-on-surface-variant ml-1 block" for="category">Cargo *</label>
+            <select id="category" name="category"
+              class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:border-primary transition-all">
+              <option value="" disabled selected>Selecione o cargo…</option>
+              <option value="Orientador">Orientador</option>
+              <option value="PG">PG — Pós-Graduação</option>
+              <option value="IC">IC — Iniciação Científica</option>
+              <option value="PQ">PQ — Pesquisador</option>
+            </select>
           </div>
         </div>
       </div>
@@ -298,7 +296,7 @@
     // Coletar dados
     const nome       = document.getElementById('full_name').value.trim();
     const matricula  = document.getElementById('enrollment').value.trim();
-    const categoria  = document.querySelector('input[name="category"]:checked')?.value || 'IC';
+    const categoria  = document.getElementById('category').value;
     const lab        = document.getElementById('lab').value.trim();
     const orientador = document.getElementById('advisor').value.trim();
     const cargaHoras = parseInt(document.getElementById('hours').value, 10);
@@ -309,7 +307,7 @@
     const terms      = document.getElementById('terms').checked;
 
     // Validação
-    if (!nome || !matricula || !email || !senha) {
+    if (!nome || !matricula || !email || !senha || !categoria) {
       errorMsg.textContent = 'Preencha todos os campos obrigatórios (*).';
       errorBox.classList.remove('hidden');
       return;
