@@ -159,14 +159,54 @@ const ChronosState = {
     return profile;
   },
 
-  async signUp({ nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha }) {
+  async signUp({ nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha, conviteToken }) {
+    // conviteToken é obrigatório: o gate real (handle_new_user) rejeita o
+    // cadastro no servidor se o token faltar/for inválido, mas mandamos aqui
+    // para que a validação aconteça na mesma transação do signUp.
     const { data, error } = await window.chronosSupabase.auth.signUp({
       email,
       password: senha,
-      options: { data: { nome, matricula, categoria, lab, orientador, carga_horas: cargaHoras, telefone } },
+      options: { data: { nome, matricula, categoria, lab, orientador, carga_horas: cargaHoras, telefone, convite_token: conviteToken } },
     });
     if (error) throw error;
     return data; // data.session existe se a confirmação de email estiver desativada no projeto
+  },
+
+  // ── Convites (cadastro por convite) ───────────────────────────────────────
+  // Valida um token de convite (público, chamado na tela de cadastro antes de
+  // exibir o formulário). Retorna { valido, motivo?, email?, nome? }.
+  async validateInvite(token) {
+    const { data, error } = await window.chronosSupabase
+      .rpc('validar_convite', { p_token: token });
+    if (error) throw error;
+    return data || { valido: false, motivo: 'inexistente' };
+  },
+
+  // Cria um convite (super admin). Retorna { id, token }.
+  async createInvite({ email, nome, expiraDias } = {}) {
+    const { data, error } = await window.chronosSupabase
+      .rpc('criar_convite', {
+        p_email: email || null,
+        p_nome: nome || null,
+        p_expira_dias: (expiraDias === null || expiraDias === undefined) ? 7 : expiraDias,
+      });
+    if (error) throw error;
+    return data; // { id, token }
+  },
+
+  // Lista todos os convites (super admin). RLS garante o acesso.
+  async listInvites() {
+    const { data, error } = await window.chronosSupabase
+      .from('convites').select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async deleteInvite(id) {
+    const { error } = await window.chronosSupabase
+      .from('convites').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async updateProfile(patch) {

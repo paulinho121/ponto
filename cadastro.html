@@ -48,7 +48,29 @@
 
 <!-- Main -->
 <main class="flex-grow flex items-start justify-center py-xl px-container-margin pb-16">
-  <div class="w-full max-w-2xl glass-card rounded-3xl border border-outline-variant/20 shadow-xl overflow-hidden fade-up">
+
+  <!-- Estado: sem convite válido (cadastro é só por convite) -->
+  <div id="invite-blocked" class="hidden w-full max-w-md glass-card rounded-3xl border border-outline-variant/20 shadow-xl overflow-hidden fade-up p-lg text-center space-y-md">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+      <span id="invite-blocked-icon" class="material-symbols-outlined text-primary text-[32px]">mail_lock</span>
+    </div>
+    <h1 class="text-headline-lg-mobile font-bold text-on-surface" id="invite-blocked-title">Cadastro apenas por convite</h1>
+    <p class="text-body-md text-on-surface-variant" id="invite-blocked-msg">
+      O acesso ao Ponto Lab é feito por convite. Peça a um super administrador que gere um link de convite para você.
+    </p>
+    <a href="index.html" class="inline-flex items-center justify-center gap-1 h-12 px-lg bg-primary text-on-primary rounded-2xl font-semibold hover:bg-primary-container transition-all">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      Voltar ao login
+    </a>
+  </div>
+
+  <!-- Estado: verificando o convite -->
+  <div id="invite-checking" class="w-full max-w-md text-center py-xl space-y-sm">
+    <span class="material-symbols-outlined text-primary text-[32px] animate-spin">sync</span>
+    <p class="text-body-md text-on-surface-variant">Verificando convite…</p>
+  </div>
+
+  <div id="signup-card" class="hidden w-full max-w-2xl glass-card rounded-3xl border border-outline-variant/20 shadow-xl overflow-hidden fade-up">
 
     <!-- Hero Header -->
     <div class="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary to-primary-container">
@@ -201,6 +223,63 @@
 </footer>
 
 <script>
+  // ── Gate de convite: cadastro só abre com um token válido na URL ──────────
+  // Link esperado: cadastro.html?convite=TOKEN
+  let conviteToken = null;
+
+  function showBlocked(title, msg, icon) {
+    document.getElementById('invite-checking').classList.add('hidden');
+    document.getElementById('signup-card').classList.add('hidden');
+    if (title) document.getElementById('invite-blocked-title').textContent = title;
+    if (msg)   document.getElementById('invite-blocked-msg').textContent = msg;
+    if (icon)  document.getElementById('invite-blocked-icon').textContent = icon;
+    document.getElementById('invite-blocked').classList.remove('hidden');
+  }
+
+  function showForm() {
+    document.getElementById('invite-checking').classList.add('hidden');
+    document.getElementById('invite-blocked').classList.add('hidden');
+    document.getElementById('signup-card').classList.remove('hidden');
+  }
+
+  (async function checkInvite() {
+    const token = new URLSearchParams(window.location.search).get('convite');
+
+    if (!token) {
+      showBlocked(null, null, null);
+      return;
+    }
+    if (!window.chronosSupabase) {
+      showBlocked('Configuração ausente',
+        'O sistema não está conectado ao servidor (supabase-config.js). Fale com o suporte.',
+        'cloud_off');
+      return;
+    }
+
+    try {
+      const res = await ChronosState.validateInvite(token);
+      if (!res || !res.valido) {
+        const motivos = {
+          usado:      ['Convite já utilizado', 'Este link de convite já foi usado para criar uma conta. Peça um novo convite.', 'link_off'],
+          expirado:   ['Convite expirado', 'Este convite passou da validade. Peça a um super administrador um novo link.', 'schedule'],
+          inexistente:['Convite inválido', 'Este link de convite não é válido. Confira se copiou o endereço completo.', 'error'],
+        };
+        const [t, m, i] = motivos[res?.motivo] || motivos.inexistente;
+        showBlocked(t, m, i);
+        return;
+      }
+
+      // Convite válido: libera o formulário e pré-preenche o que veio no convite
+      conviteToken = token;
+      if (res.nome)  document.getElementById('full_name').value = res.nome;
+      if (res.email) document.getElementById('email').value = res.email;
+      showForm();
+    } catch (err) {
+      showBlocked('Não foi possível verificar o convite',
+        (err.message || 'Tente novamente em instantes.'), 'sync_problem');
+    }
+  })();
+
   // Slider de horas
   const slider  = document.getElementById('hours');
   const display = document.getElementById('hours-display');
@@ -260,6 +339,11 @@
       errorBox.classList.remove('hidden');
       return;
     }
+    if (!conviteToken) {
+      errorMsg.textContent = 'Convite ausente ou inválido. Abra o link de convite recebido.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
 
     errorBox.classList.add('hidden');
 
@@ -278,7 +362,7 @@
       }
 
       const result = await ChronosState.signUp({
-        nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha,
+        nome, matricula, categoria, lab, orientador, cargaHoras, email, telefone, senha, conviteToken,
       });
 
       btnIcon.classList.remove('animate-spin');
@@ -301,7 +385,13 @@
       btnIcon.textContent = 'arrow_forward';
       const msgText = err.message || '';
       let msg;
-      if (/e-mail|email/i.test(msgText) && /duplicate|already exists|taken|23505/i.test(msgText)) {
+      if (/convite/i.test(msgText) && /utilizado|já foi/i.test(msgText)) {
+        msg = 'Este convite já foi utilizado. Peça um novo link.';
+      } else if (/convite/i.test(msgText) && /expirad/i.test(msgText)) {
+        msg = 'Convite expirado. Peça a um super administrador um novo link.';
+      } else if (/convite/i.test(msgText)) {
+        msg = 'Convite inválido. Abra o link de convite recebido.';
+      } else if (/e-mail|email/i.test(msgText) && /duplicate|already exists|taken|23505/i.test(msgText)) {
         msg = 'Este e-mail já está cadastrado.';
       } else if (/já está cadastrada|duplicate|already exists|taken|23505/i.test(msgText)) {
         msg = 'Esta matrícula já está cadastrada.';
