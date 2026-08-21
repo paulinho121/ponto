@@ -377,11 +377,13 @@
       }
 
       lbl.textContent = 'Registrando...';
-      const now = ChronosUI.nowTime();
 
+      // p_time é enviado só por compatibilidade — o servidor IGNORA e carimba
+      // a própria hora (ver migração 010). A hora exibida vem do que o servidor
+      // gravou, não do relógio do celular.
       const { data, error } = await window.chronosSupabase.rpc('registrar_ponto', {
         p_actions: earlyLeave ? ['almoco', 'saida'] : [action],
-        p_time: now,
+        p_time: ChronosUI.nowTime(),
         p_latitude: lat,
         p_longitude: lng,
       });
@@ -391,13 +393,15 @@
       icon.classList.remove('animate-spin');
       btn.disabled = false;
 
+      // Hora efetivamente registrada pelo servidor (HH:MM)
+      const hora = (earlyLeave ? record.saida : record[action]) || ChronosUI.nowTime();
       const messages = {
-        entrada: `✅ Entrada registrada às ${now}`,
-        almoco:  `🍽️ Almoço registrado às ${now}`,
-        retorno: `🔄 Retorno registrado às ${now}`,
-        saida:   `🏠 Saída registrada às ${now}. Bom descanso!`,
+        entrada: `✅ Entrada registrada às ${hora}`,
+        almoco:  `🍽️ Almoço registrado às ${hora}`,
+        retorno: `🔄 Retorno registrado às ${hora}`,
+        saida:   `🏠 Saída registrada às ${hora}. Bom descanso!`,
       };
-      const msg = earlyLeave ? `🏠 Almoço e saída registrados às ${now}. Bom descanso!` : messages[action];
+      const msg = earlyLeave ? `🏠 Almoço e saída registrados às ${hora}. Bom descanso!` : messages[action];
       ChronosUI.showToast(msg, 'success');
       renderAll();
     } catch (err) {
