@@ -4,6 +4,68 @@
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TEMA (claro/escuro)
+// Aplica a classe .dark no <html> ANTES do render (evita "flash") e injeta as
+// variáveis de cor (canais RGB). Ligar um botão é só dar a ele o atributo
+// data-theme-toggle — o clique é conectado automaticamente. Respeita a escolha
+// salva (localStorage) e, na ausência dela, a preferência do sistema.
+// ─────────────────────────────────────────────────────────────────────────────
+(function () {
+  var STORAGE = 'chronos-theme';
+  function preferred() {
+    try { var s = localStorage.getItem(STORAGE); if (s === 'dark' || s === 'light') return s; } catch (e) {}
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  document.documentElement.classList.toggle('dark', preferred() === 'dark');
+
+  var VARS_LIGHT = ":root{--c-primary:19 32 88;--c-on-primary:255 255 255;--c-primary-container:219 224 255;--c-on-primary-container:0 18 77;--c-primary-fixed:219 224 255;--c-primary-fixed-dim:178 188 255;--c-on-primary-fixed:0 18 77;--c-on-primary-fixed-variant:47 60 126;--c-secondary:85 97 143;--c-on-secondary:255 255 255;--c-secondary-container:218 225 255;--c-on-secondary-container:22 27 55;--c-secondary-fixed:218 225 255;--c-secondary-fixed-dim:179 193 244;--c-on-secondary-fixed:22 27 55;--c-on-secondary-fixed-variant:61 74 104;--c-tertiary:246 168 18;--c-on-tertiary:59 44 0;--c-tertiary-container:255 231 176;--c-on-tertiary-container:42 30 0;--c-tertiary-fixed:255 231 176;--c-tertiary-fixed-dim:246 201 94;--c-on-tertiary-fixed:40 28 0;--c-on-tertiary-fixed-variant:92 71 0;--c-error:186 26 26;--c-on-error:255 255 255;--c-error-container:255 218 214;--c-on-error-container:147 0 10;--c-background:250 248 255;--c-on-background:19 27 46;--c-surface:250 248 255;--c-surface-dim:214 217 238;--c-surface-bright:250 248 255;--c-surface-container-lowest:255 255 255;--c-surface-container-low:243 244 255;--c-surface-container:236 238 254;--c-surface-container-high:230 232 248;--c-surface-container-highest:224 227 242;--c-on-surface:19 27 46;--c-on-surface-variant:67 70 86;--c-outline:115 118 136;--c-outline-variant:195 198 215;--c-inverse-surface:40 48 68;--c-inverse-on-surface:238 240 255;--c-inverse-primary:178 188 255;--c-surface-tint:19 32 88;--c-surface-variant:224 227 242;}";
+  var VARS_DARK = "html.dark{--c-primary:74 92 200;--c-on-primary:255 255 255;--c-primary-container:43 54 114;--c-on-primary-container:219 224 255;--c-primary-fixed:219 224 255;--c-primary-fixed-dim:178 188 255;--c-on-primary-fixed:0 18 77;--c-on-primary-fixed-variant:200 208 255;--c-secondary:155 166 214;--c-on-secondary:255 255 255;--c-secondary-container:46 54 82;--c-on-secondary-container:218 225 255;--c-secondary-fixed:218 225 255;--c-secondary-fixed-dim:179 193 244;--c-on-secondary-fixed:218 225 255;--c-on-secondary-fixed-variant:179 193 244;--c-tertiary:251 183 51;--c-on-tertiary:59 44 0;--c-tertiary-container:74 58 14;--c-on-tertiary-container:255 231 176;--c-tertiary-fixed:255 231 176;--c-tertiary-fixed-dim:246 201 94;--c-on-tertiary-fixed:40 28 0;--c-on-tertiary-fixed-variant:246 201 94;--c-error:226 77 77;--c-on-error:255 255 255;--c-error-container:92 20 20;--c-on-error-container:255 218 214;--c-background:14 20 36;--c-on-background:228 231 244;--c-surface:14 20 36;--c-surface-dim:10 15 28;--c-surface-bright:35 44 68;--c-surface-container-lowest:11 17 31;--c-surface-container-low:21 29 49;--c-surface-container:25 34 58;--c-surface-container-high:33 43 69;--c-surface-container-highest:42 52 79;--c-on-surface:228 231 244;--c-on-surface-variant:180 186 208;--c-outline:139 144 166;--c-outline-variant:57 65 90;--c-inverse-surface:228 231 244;--c-inverse-on-surface:40 48 68;--c-inverse-primary:19 32 88;--c-surface-tint:74 92 200;--c-surface-variant:42 52 79;}";
+  // Ajustes para cores "cruas" que não usam tokens — só no escuro (o claro fica igual)
+  var OVERRIDES =
+    ":root{color-scheme:light}html.dark{color-scheme:dark}" +
+    "html.dark body{background-color:#0e1424 !important}" +
+    "html.dark .glass{background:rgba(16,22,40,.82) !important}" +
+    "html.dark .bg-white{background-color:#141c31 !important}" +
+    "html.dark .bg-white\\/85{background-color:rgba(20,28,49,.85) !important}" +
+    "html.dark .bg-slate-50{background-color:#151d31 !important}" +
+    "html.dark .border-slate-200{border-color:#2a3247 !important}";
+
+  var st = document.createElement('style');
+  st.id = 'chronos-theme-vars';
+  st.textContent = VARS_LIGHT + VARS_DARK + OVERRIDES;
+  (document.head || document.documentElement).appendChild(st);
+
+  function syncUI() {
+    var dark = document.documentElement.classList.contains('dark');
+    document.querySelectorAll('[data-theme-toggle] .theme-ico').forEach(function (el) {
+      el.textContent = dark ? 'light_mode' : 'dark_mode';
+    });
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+      b.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    });
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#0e1424' : '#132058');
+  }
+
+  window.ChronosTheme = {
+    get: function () { return document.documentElement.classList.contains('dark') ? 'dark' : 'light'; },
+    set: function (t) {
+      document.documentElement.classList.toggle('dark', t === 'dark');
+      try { localStorage.setItem(STORAGE, t); } catch (e) {}
+      syncUI();
+    },
+    toggle: function () { this.set(this.get() === 'dark' ? 'light' : 'dark'); },
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () { window.ChronosTheme.toggle(); });
+    });
+    syncUI();
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────────────────────
 // TAILWIND CONFIG UNIFICADO
 // ─────────────────────────────────────────────────────────────────────────────
 if (typeof tailwind !== 'undefined') {
@@ -11,54 +73,58 @@ if (typeof tailwind !== 'undefined') {
     darkMode: 'class',
     theme: {
       extend: {
+        // As cores viram variáveis CSS (canais RGB) — ver o bootstrap de tema no
+        // topo deste arquivo. Assim o mesmo utilitário (bg-surface, text-on-surface,
+        // bg-primary/30, etc.) se adapta ao tema claro/escuro só trocando a classe
+        // .dark no <html>, inclusive com os modificadores de opacidade.
         colors: {
-          'primary':                   '#132058',
-          'on-primary':                '#ffffff',
-          'primary-container':         '#dbe0ff',
-          'on-primary-container':      '#00124d',
-          'primary-fixed':             '#dbe0ff',
-          'primary-fixed-dim':         '#b2bcff',
-          'on-primary-fixed':          '#00124d',
-          'on-primary-fixed-variant':  '#2f3c7e',
-          'secondary':                 '#55618f',
-          'on-secondary':              '#ffffff',
-          'secondary-container':       '#dae1ff',
-          'on-secondary-container':    '#161b37',
-          'secondary-fixed':           '#dae1ff',
-          'secondary-fixed-dim':       '#b3c1f4',
-          'on-secondary-fixed':        '#161b37',
-          'on-secondary-fixed-variant':'#3d4a68',
-          'tertiary':                  '#F6A812',
-          'on-tertiary':               '#3b2c00',
-          'tertiary-container':        '#ffe7b0',
-          'on-tertiary-container':     '#2a1e00',
-          'tertiary-fixed':            '#ffe7b0',
-          'tertiary-fixed-dim':        '#f6c95e',
-          'on-tertiary-fixed':         '#281c00',
-          'on-tertiary-fixed-variant': '#5c4700',
-          'error':                     '#ba1a1a',
-          'on-error':                  '#ffffff',
-          'error-container':           '#ffdad6',
-          'on-error-container':        '#93000a',
-          'background':                '#faf8ff',
-          'on-background':             '#131b2e',
-          'surface':                   '#faf8ff',
-          'surface-dim':               '#d6d9ee',
-          'surface-bright':            '#faf8ff',
-          'surface-container-lowest':  '#ffffff',
-          'surface-container-low':     '#f3f4ff',
-          'surface-container':         '#eceefe',
-          'surface-container-high':    '#e6e8f8',
-          'surface-container-highest': '#e0e3f2',
-          'on-surface':                '#131b2e',
-          'on-surface-variant':        '#434656',
-          'outline':                   '#737688',
-          'outline-variant':           '#c3c6d7',
-          'inverse-surface':           '#283044',
-          'inverse-on-surface':        '#eef0ff',
-          'inverse-primary':           '#b2bcff',
-          'surface-tint':              '#132058',
-          'surface-variant':           '#e0e3f2',
+          'primary':                  'rgb(var(--c-primary) / <alpha-value>)',
+          'on-primary':               'rgb(var(--c-on-primary) / <alpha-value>)',
+          'primary-container':        'rgb(var(--c-primary-container) / <alpha-value>)',
+          'on-primary-container':     'rgb(var(--c-on-primary-container) / <alpha-value>)',
+          'primary-fixed':            'rgb(var(--c-primary-fixed) / <alpha-value>)',
+          'primary-fixed-dim':        'rgb(var(--c-primary-fixed-dim) / <alpha-value>)',
+          'on-primary-fixed':         'rgb(var(--c-on-primary-fixed) / <alpha-value>)',
+          'on-primary-fixed-variant': 'rgb(var(--c-on-primary-fixed-variant) / <alpha-value>)',
+          'secondary':                'rgb(var(--c-secondary) / <alpha-value>)',
+          'on-secondary':             'rgb(var(--c-on-secondary) / <alpha-value>)',
+          'secondary-container':      'rgb(var(--c-secondary-container) / <alpha-value>)',
+          'on-secondary-container':   'rgb(var(--c-on-secondary-container) / <alpha-value>)',
+          'secondary-fixed':          'rgb(var(--c-secondary-fixed) / <alpha-value>)',
+          'secondary-fixed-dim':      'rgb(var(--c-secondary-fixed-dim) / <alpha-value>)',
+          'on-secondary-fixed':       'rgb(var(--c-on-secondary-fixed) / <alpha-value>)',
+          'on-secondary-fixed-variant':'rgb(var(--c-on-secondary-fixed-variant) / <alpha-value>)',
+          'tertiary':                 'rgb(var(--c-tertiary) / <alpha-value>)',
+          'on-tertiary':              'rgb(var(--c-on-tertiary) / <alpha-value>)',
+          'tertiary-container':       'rgb(var(--c-tertiary-container) / <alpha-value>)',
+          'on-tertiary-container':    'rgb(var(--c-on-tertiary-container) / <alpha-value>)',
+          'tertiary-fixed':           'rgb(var(--c-tertiary-fixed) / <alpha-value>)',
+          'tertiary-fixed-dim':       'rgb(var(--c-tertiary-fixed-dim) / <alpha-value>)',
+          'on-tertiary-fixed':        'rgb(var(--c-on-tertiary-fixed) / <alpha-value>)',
+          'on-tertiary-fixed-variant':'rgb(var(--c-on-tertiary-fixed-variant) / <alpha-value>)',
+          'error':                    'rgb(var(--c-error) / <alpha-value>)',
+          'on-error':                 'rgb(var(--c-on-error) / <alpha-value>)',
+          'error-container':          'rgb(var(--c-error-container) / <alpha-value>)',
+          'on-error-container':       'rgb(var(--c-on-error-container) / <alpha-value>)',
+          'background':               'rgb(var(--c-background) / <alpha-value>)',
+          'on-background':            'rgb(var(--c-on-background) / <alpha-value>)',
+          'surface':                  'rgb(var(--c-surface) / <alpha-value>)',
+          'surface-dim':              'rgb(var(--c-surface-dim) / <alpha-value>)',
+          'surface-bright':           'rgb(var(--c-surface-bright) / <alpha-value>)',
+          'surface-container-lowest': 'rgb(var(--c-surface-container-lowest) / <alpha-value>)',
+          'surface-container-low':    'rgb(var(--c-surface-container-low) / <alpha-value>)',
+          'surface-container':        'rgb(var(--c-surface-container) / <alpha-value>)',
+          'surface-container-high':   'rgb(var(--c-surface-container-high) / <alpha-value>)',
+          'surface-container-highest':'rgb(var(--c-surface-container-highest) / <alpha-value>)',
+          'on-surface':               'rgb(var(--c-on-surface) / <alpha-value>)',
+          'on-surface-variant':       'rgb(var(--c-on-surface-variant) / <alpha-value>)',
+          'outline':                  'rgb(var(--c-outline) / <alpha-value>)',
+          'outline-variant':          'rgb(var(--c-outline-variant) / <alpha-value>)',
+          'inverse-surface':          'rgb(var(--c-inverse-surface) / <alpha-value>)',
+          'inverse-on-surface':       'rgb(var(--c-inverse-on-surface) / <alpha-value>)',
+          'inverse-primary':          'rgb(var(--c-inverse-primary) / <alpha-value>)',
+          'surface-tint':             'rgb(var(--c-surface-tint) / <alpha-value>)',
+          'surface-variant':          'rgb(var(--c-surface-variant) / <alpha-value>)',
         },
         borderRadius: {
           DEFAULT: '0.25rem',
