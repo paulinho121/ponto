@@ -368,12 +368,14 @@
       // Localização só é coletada se houver locais ativos. A validação de
       // distância é feita no servidor (RPC registrar_ponto, geofencing).
       const locais = await ChronosState.getActiveLocations();
-      let lat = null, lng = null;
+      let lat = null, lng = null, acc = null;
       if (locais.length > 0) {
         lbl.textContent = 'Obtendo localização...';
-        const pos = await ChronosUI.getCurrentPosition();
+        // Espera o GPS travar e usa a leitura mais precisa (evita falso "distante")
+        const pos = await ChronosUI.getBestPosition();
         lat = pos.latitude;
         lng = pos.longitude;
+        acc = pos.accuracy;
       }
 
       lbl.textContent = 'Registrando...';
@@ -386,6 +388,7 @@
         p_time: ChronosUI.nowTime(),
         p_latitude: lat,
         p_longitude: lng,
+        p_accuracy: acc,
       });
       if (error) throw error;
       record = ChronosState._mapRecord(data);
