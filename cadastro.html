@@ -352,10 +352,13 @@
     btnIcon.classList.add('animate-spin');
 
     try {
-      // Impede cadastro de matrícula duplicada antes de criar a conta
-      const emailJaUsado = await window.chronosSupabase
+      // Impede cadastro de matrícula duplicada antes de criar a conta.
+      // rpc() retorna { data, error }: precisamos do .data (o email da
+      // matrícula, ou null se estiver livre) — não do objeto inteiro, que
+      // seria sempre "truthy" e barraria todo cadastro.
+      const { data: matriculaEmUso } = await window.chronosSupabase
         .rpc('email_by_matricula', { p_matricula: matricula });
-      if (emailJaUsado) {
+      if (matriculaEmUso) {
         throw new Error('Esta matrícula já está cadastrada.');
       }
 
