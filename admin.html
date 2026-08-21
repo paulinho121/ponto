@@ -145,8 +145,8 @@
 
     <div class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-md slide-up">
       <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
-        <span class="material-symbols-outlined text-primary">add_location_alt</span>
-        Novo Local Autorizado
+        <span class="material-symbols-outlined text-primary" id="loc-form-icon">add_location_alt</span>
+        <span id="loc-form-title">Novo Local Autorizado</span>
       </h2>
 
       <div class="space-y-xs">
@@ -173,7 +173,7 @@
 
       <div class="space-y-xs">
         <label class="text-label-sm text-on-surface-variant ml-1 block" for="loc-raio">Raio de tolerância: <span id="loc-raio-display" class="text-primary font-bold">100m</span></label>
-        <input id="loc-raio" class="w-full accent-primary" type="range" min="20" max="1000" step="10" value="100"/>
+        <input id="loc-raio" class="w-full accent-primary" type="range" min="20" max="5000" step="10" value="100"/>
       </div>
 
       <div id="loc-error" class="hidden p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
@@ -183,7 +183,12 @@
 
       <button id="btn-save-location" type="button" class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
         <span class="material-symbols-outlined" id="save-loc-icon">save</span>
-        Salvar Local
+        <span id="save-loc-label">Salvar Local</span>
+      </button>
+
+      <button id="btn-cancel-edit" type="button" class="hidden w-full h-11 border border-outline-variant/50 text-on-surface-variant rounded-2xl font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center gap-sm">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+        Cancelar edição
       </button>
     </div>
 
@@ -563,6 +568,48 @@
     }
   });
 
+  // ── Edição de local ───────────────────────────────────────────────────────
+  let editingLocationId = null;
+
+  function resetLocForm() {
+    $('loc-nome').value = '';
+    $('loc-lat').value = '';
+    $('loc-lng').value = '';
+    $('loc-raio').value = 100;
+    $('loc-raio-display').textContent = '100m';
+    $('gps-accuracy').textContent = '';
+    capturedPosition = null;
+    $('loc-error').classList.add('hidden');
+  }
+
+  function enterEditMode(loc) {
+    editingLocationId = loc.id;
+    $('loc-nome').value = loc.nome;
+    $('loc-lat').value  = loc.latitude;
+    $('loc-lng').value  = loc.longitude;
+    $('loc-raio').value = loc.raio_metros;
+    $('loc-raio-display').textContent = `${loc.raio_metros}m`;
+    $('loc-error').classList.add('hidden');
+    // Muda o formulário para o modo edição
+    $('loc-form-title').textContent = 'Editar Local';
+    $('loc-form-icon').textContent  = 'edit_location_alt';
+    $('save-loc-label').textContent = 'Salvar alterações';
+    $('btn-cancel-edit').classList.remove('hidden');
+    // Leva o usuário até o formulário
+    document.querySelector('#panel-locais').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function exitEditMode() {
+    editingLocationId = null;
+    $('loc-form-title').textContent = 'Novo Local Autorizado';
+    $('loc-form-icon').textContent  = 'add_location_alt';
+    $('save-loc-label').textContent = 'Salvar Local';
+    $('btn-cancel-edit').classList.add('hidden');
+    resetLocForm();
+  }
+
+  $('btn-cancel-edit').addEventListener('click', exitEditMode);
+
   $('btn-save-location').addEventListener('click', async () => {
     const errorBox = $('loc-error');
     const errorMsg = $('loc-error-msg');
@@ -586,15 +633,15 @@
     icon.classList.add('animate-spin');
 
     try {
-      await ChronosState.createLocation({ nome, latitude, longitude, raioMetros });
-      ChronosUI.showToast('Local cadastrado com sucesso!', 'success');
-      $('loc-nome').value = '';
-      $('loc-lat').value = '';
-      $('loc-lng').value = '';
-      $('loc-raio').value = 100;
-      $('loc-raio-display').textContent = '100m';
-      $('gps-accuracy').textContent = '';
-      capturedPosition = null;
+      if (editingLocationId) {
+        await ChronosState.updateLocation(editingLocationId, { nome, latitude, longitude, raioMetros });
+        ChronosUI.showToast('Local atualizado com sucesso!', 'success');
+        exitEditMode();
+      } else {
+        await ChronosState.createLocation({ nome, latitude, longitude, raioMetros });
+        ChronosUI.showToast('Local cadastrado com sucesso!', 'success');
+        resetLocForm();
+      }
       await renderLocations();
     } catch (err) {
       errorMsg.textContent = err.message || 'Não foi possível salvar o local.';
@@ -638,6 +685,9 @@
           </span>
         </div>
         <div class="flex items-center gap-xs flex-shrink-0">
+          <button class="btn-edit w-9 h-9 rounded-full flex items-center justify-center hover:bg-primary/10 transition-colors" title="Editar" data-id="${loc.id}">
+            <span class="material-symbols-outlined text-primary">edit</span>
+          </button>
           <button class="btn-toggle w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container-low transition-colors" title="${loc.ativo ? 'Desativar' : 'Ativar'}" data-id="${loc.id}" data-ativo="${loc.ativo}">
             <span class="material-symbols-outlined text-on-surface-variant">${loc.ativo ? 'toggle_on' : 'toggle_off'}</span>
           </button>
@@ -647,6 +697,13 @@
         </div>
       `;
       list.appendChild(card);
+    });
+
+    list.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const loc = locais.find(l => l.id === btn.dataset.id);
+        if (loc) enterEditMode(loc);
+      });
     });
 
     list.querySelectorAll('.btn-toggle').forEach(btn => {

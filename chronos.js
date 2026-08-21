@@ -338,6 +338,17 @@ const ChronosState = {
     return data;
   },
 
+  async updateLocation(id, { nome, latitude, longitude, raioMetros }) {
+    const { data, error } = await window.chronosSupabase
+      .from('locais_permitidos')
+      .update({ nome, latitude, longitude, raio_metros: raioMetros })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
   async setLocationActive(id, ativo) {
     const { error } = await window.chronosSupabase
       .from('locais_permitidos').update({ ativo }).eq('id', id);
