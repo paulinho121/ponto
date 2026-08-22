@@ -436,6 +436,17 @@ const ChronosState = {
     if (error) throw new Error(error.message || 'Não foi possível alterar o privilégio.');
   },
 
+  // Logs de auditoria (só super admin — garantido pelo RLS). Os nomes de quem
+  // fez / quem foi afetado são resolvidos no cliente a partir da lista de perfis.
+  async listAuditLogs({ limit = 150 } = {}) {
+    const { data, error } = await window.chronosSupabase
+      .from('audit_logs').select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data || [];
+  },
+
   async listAllProfiles() {
     const { data, error } = await window.chronosSupabase
       .from('profiles').select('*').order('nome');

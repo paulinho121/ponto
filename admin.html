@@ -53,26 +53,30 @@
 
 <!-- Abas -->
 <nav class="fixed top-16 left-0 right-0 z-40 glass border-b border-outline-variant/30">
-  <div class="max-w-3xl mx-auto flex px-container-margin">
-    <button id="tab-pontos" type="button" data-panel="pontos" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-primary text-primary">
+  <div class="max-w-3xl mx-auto flex px-container-margin overflow-x-auto" style="scrollbar-width:none">
+    <button id="tab-pontos" type="button" data-panel="pontos" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-primary text-primary">
       <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
       <span class="text-label-sm font-semibold">P. Esquecidos</span>
     </button>
-    <button id="tab-locais" type="button" data-panel="locais" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-locais" type="button" data-panel="locais" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">location_on</span>
       <span class="text-label-sm font-semibold">Locais</span>
     </button>
-    <button id="tab-relatorios" type="button" data-panel="relatorios" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-relatorios" type="button" data-panel="relatorios" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">bar_chart</span>
       <span class="text-label-sm font-semibold">Relatórios</span>
     </button>
-    <button id="tab-convites" type="button" data-panel="convites" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-convites" type="button" data-panel="convites" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">person_add</span>
       <span class="text-label-sm font-semibold">Convites</span>
     </button>
-    <button id="tab-usuarios" type="button" data-panel="usuarios" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-usuarios" type="button" data-panel="usuarios" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
       <span class="text-label-sm font-semibold">Usuários</span>
+    </button>
+    <button id="tab-logs" type="button" data-panel="logs" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px]">history_edu</span>
+      <span class="text-label-sm font-semibold">Logs</span>
     </button>
   </div>
 </nav>
@@ -394,6 +398,38 @@
       <div id="usuarios-empty" class="hidden text-center py-xl">
         <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">group_off</span>
         <p class="text-body-md text-on-surface-variant mt-2">Nenhum usuário encontrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ ABA 6: LOGS DE AUDITORIA ════════════ -->
+  <section id="panel-logs" class="tab-panel hidden space-y-lg">
+    <div class="space-y-md slide-up">
+      <div class="flex items-center justify-between gap-md">
+        <div>
+          <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
+            <span class="material-symbols-outlined text-primary">history_edu</span>
+            Registro de atividades
+          </h2>
+          <p class="text-label-sm text-on-surface-variant mt-1">
+            Ações dos administradores: promoções, correções de ponto, convites e locais.
+          </p>
+        </div>
+        <button id="btn-logs-refresh" type="button" class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors" title="Atualizar" aria-label="Atualizar logs">
+          <span class="material-symbols-outlined text-on-surface-variant" id="logs-refresh-icon">refresh</span>
+        </button>
+      </div>
+
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+        <input id="logs-search" type="text" placeholder="Buscar por nome ou ação"
+          class="w-full h-12 pl-10 pr-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/>
+      </div>
+
+      <div id="logs-list" class="space-y-sm"></div>
+      <div id="logs-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">history_toggle_off</span>
+        <p class="text-body-md text-on-surface-variant mt-2">Nenhuma atividade registrada ainda.</p>
       </div>
     </div>
   </section>
@@ -1186,6 +1222,77 @@
   }
 
   $('usr-search').addEventListener('input', e => { usrFiltro = e.target.value; renderUsuarios(); });
+
+  // ════════════ ABA 6: LOGS DE AUDITORIA ════════════
+  let logsAll = [], logsLoaded = false, logsFiltro = '';
+  const fmtDia = iso => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+
+  const LOG_META = {
+    promoveu_admin:  { icon: 'shield_person',   color: 'text-primary',   verbo: (alvo)   => `tornou ${alvo} super admin` },
+    removeu_admin:   { icon: 'remove_moderator',color: 'text-error',     verbo: (alvo)   => `removeu o super admin de ${alvo}` },
+    registrou_ponto: { icon: 'more_time',       color: 'text-secondary', verbo: (alvo,d) => `registrou o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    corrigiu_ponto:  { icon: 'edit_calendar',   color: 'text-secondary', verbo: (alvo,d) => `corrigiu o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    excluiu_ponto:   { icon: 'delete',          color: 'text-error',     verbo: (alvo,d) => `excluiu o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    criou_convite:   { icon: 'add_link',        color: 'text-primary',   verbo: (alvo,d) => `criou um convite${(d.nome || d.email) ? ' para ' + (d.nome || d.email) : ''}` },
+    excluiu_convite: { icon: 'link_off',        color: 'text-error',     verbo: (alvo,d) => `excluiu um convite${(d.nome || d.email) ? ' de ' + (d.nome || d.email) : ''}` },
+    criou_local:     { icon: 'add_location_alt',color: 'text-primary',   verbo: (alvo,d) => `criou o local "${d.nome || '—'}"` },
+    editou_local:    { icon: 'edit_location_alt',color:'text-secondary', verbo: (alvo,d) => `editou o local "${d.nome || '—'}"${d.raio_metros ? ' (raio ' + d.raio_metros + 'm)' : ''}` },
+    excluiu_local:   { icon: 'wrong_location',  color: 'text-error',     verbo: (alvo,d) => `excluiu o local "${d.nome || '—'}"` },
+  };
+
+  function drawLogs() {
+    const list = $('logs-list'), empty = $('logs-empty');
+    const nomePorId = Object.fromEntries(perfis.map(p => [p.id, p.nome]));
+    const fmtWhen = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const termo = logsFiltro.trim().toLowerCase();
+    list.innerHTML = '';
+
+    const rows = logsAll.map(l => {
+      const meta = LOG_META[l.action] || { icon: 'bolt', color: 'text-on-surface-variant', verbo: () => l.action };
+      const d = l.details || {};
+      const actor = nomePorId[l.actor_id] || 'Administrador';
+      const alvo = nomePorId[l.target_user_id] || d.nome || d.matricula || 'usuário';
+      const texto = `${actor} ${meta.verbo(alvo, d)}`;
+      return { meta, texto, when: fmtWhen(l.created_at) };
+    }).filter(r => !termo || r.texto.toLowerCase().includes(termo));
+
+    if (rows.length === 0) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    rows.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm flex items-start gap-md';
+      card.innerHTML = `
+        <span class="material-symbols-outlined ${r.meta.color} flex-shrink-0">${r.meta.icon}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-body-md text-on-surface break-words">${r.texto}</p>
+          <p class="text-label-sm text-on-surface-variant mt-0.5">${r.when}</p>
+        </div>`;
+      list.appendChild(card);
+    });
+  }
+
+  async function renderLogs() {
+    if (!perfis.length) { try { await loadProfiles(); } catch (e) {} }
+    try {
+      logsAll = await ChronosState.listAuditLogs({ limit: 150 });
+      logsLoaded = true;
+    } catch (err) {
+      ChronosUI.showToast('Erro ao carregar logs: ' + (err.message || ''), 'error');
+      return;
+    }
+    drawLogs();
+  }
+
+  $('logs-search').addEventListener('input', e => { logsFiltro = e.target.value; drawLogs(); });
+  $('btn-logs-refresh').addEventListener('click', async () => {
+    const ic = $('logs-refresh-icon');
+    ic.classList.add('animate-spin');
+    await renderLogs();
+    ic.classList.remove('animate-spin');
+  });
+  // Carrega sob demanda na primeira vez que abrir a aba
+  $('tab-logs').addEventListener('click', () => { if (!logsLoaded) renderLogs(); });
 
   // ── Init ──────────────────────────────────────────────────────────────────
   await loadProfiles();
