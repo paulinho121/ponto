@@ -40,34 +40,49 @@
     </div>
     <h1 class="text-headline-lg-mobile font-bold text-on-surface">Administração</h1>
   </div>
-  <a href="ponto.html" class="text-label-sm text-primary hover:underline underline-offset-4 font-semibold flex items-center gap-1">
-    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-    Voltar
-  </a>
+  <div class="flex items-center gap-2">
+    <button data-theme-toggle class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95" aria-label="Alternar tema claro/escuro" title="Tema">
+      <span class="material-symbols-outlined text-on-surface-variant theme-ico">dark_mode</span>
+    </button>
+    <a href="ponto.html" class="text-label-sm text-primary hover:underline underline-offset-4 font-semibold flex items-center gap-1">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+      Voltar
+    </a>
+  </div>
 </header>
 
 <!-- Abas -->
 <nav class="fixed top-16 left-0 right-0 z-40 glass border-b border-outline-variant/30">
-  <div class="max-w-3xl mx-auto flex px-container-margin">
-    <button id="tab-pontos" type="button" data-panel="pontos" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-primary text-primary">
+  <div class="max-w-3xl mx-auto flex px-container-margin overflow-x-auto" style="scrollbar-width:none">
+    <button id="tab-pontos" type="button" data-panel="pontos" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-primary text-primary">
       <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
       <span class="text-label-sm font-semibold">P. Esquecidos</span>
     </button>
-    <button id="tab-locais" type="button" data-panel="locais" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-locais" type="button" data-panel="locais" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">location_on</span>
       <span class="text-label-sm font-semibold">Locais</span>
     </button>
-    <button id="tab-relatorios" type="button" data-panel="relatorios" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-relatorios" type="button" data-panel="relatorios" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">bar_chart</span>
       <span class="text-label-sm font-semibold">Relatórios</span>
     </button>
-    <button id="tab-convites" type="button" data-panel="convites" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-convites" type="button" data-panel="convites" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">person_add</span>
       <span class="text-label-sm font-semibold">Convites</span>
     </button>
-    <button id="tab-usuarios" type="button" data-panel="usuarios" class="tab-btn flex-1 h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+    <button id="tab-usuarios" type="button" data-panel="usuarios" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
       <span class="text-label-sm font-semibold">Usuários</span>
+    </button>
+    <button id="tab-correcoes" type="button" data-panel="correcoes" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px] relative">rule
+        <span id="cor-badge" class="hidden absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+      </span>
+      <span class="text-label-sm font-semibold">Correções</span>
+    </button>
+    <button id="tab-logs" type="button" data-panel="logs" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px]">history_edu</span>
+      <span class="text-label-sm font-semibold">Logs</span>
     </button>
   </div>
 </nav>
@@ -389,6 +404,67 @@
       <div id="usuarios-empty" class="hidden text-center py-xl">
         <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">group_off</span>
         <p class="text-body-md text-on-surface-variant mt-2">Nenhum usuário encontrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ ABA 7: CORREÇÕES ════════════ -->
+  <section id="panel-correcoes" class="tab-panel hidden space-y-lg">
+    <div class="space-y-md slide-up">
+      <div class="flex items-center justify-between gap-md">
+        <div>
+          <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
+            <span class="material-symbols-outlined text-primary">rule</span>
+            Correções de ponto
+          </h2>
+          <p class="text-label-sm text-on-surface-variant mt-1">Solicitações enviadas pelos pesquisadores. Aprovar aplica os horários ao dia.</p>
+        </div>
+        <button id="btn-cor-refresh" type="button" class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors" title="Atualizar" aria-label="Atualizar">
+          <span class="material-symbols-outlined text-on-surface-variant" id="cor-refresh-icon">refresh</span>
+        </button>
+      </div>
+
+      <label class="flex items-center gap-sm text-body-md text-on-surface-variant cursor-pointer">
+        <input type="checkbox" id="cor-show-all" class="w-5 h-5 accent-primary rounded"/>
+        Mostrar também as já revisadas
+      </label>
+
+      <div id="correcoes-list" class="space-y-sm"></div>
+      <div id="correcoes-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">task_alt</span>
+        <p class="text-body-md text-on-surface-variant mt-2">Nenhuma correção pendente.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ ABA 6: LOGS DE AUDITORIA ════════════ -->
+  <section id="panel-logs" class="tab-panel hidden space-y-lg">
+    <div class="space-y-md slide-up">
+      <div class="flex items-center justify-between gap-md">
+        <div>
+          <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
+            <span class="material-symbols-outlined text-primary">history_edu</span>
+            Registro de atividades
+          </h2>
+          <p class="text-label-sm text-on-surface-variant mt-1">
+            Ações dos administradores: promoções, correções de ponto, convites e locais.
+          </p>
+        </div>
+        <button id="btn-logs-refresh" type="button" class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors" title="Atualizar" aria-label="Atualizar logs">
+          <span class="material-symbols-outlined text-on-surface-variant" id="logs-refresh-icon">refresh</span>
+        </button>
+      </div>
+
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+        <input id="logs-search" type="text" placeholder="Buscar por nome ou ação"
+          class="w-full h-12 pl-10 pr-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/>
+      </div>
+
+      <div id="logs-list" class="space-y-sm"></div>
+      <div id="logs-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">history_toggle_off</span>
+        <p class="text-body-md text-on-surface-variant mt-2">Nenhuma atividade registrada ainda.</p>
       </div>
     </div>
   </section>
@@ -1145,15 +1221,42 @@
               <span class="material-symbols-outlined text-[16px]">add_moderator</span> Tornar admin
             </button>`;
 
+      const cargos = ['Orientador', 'PG', 'IC', 'PQ'];
+      const cargoOpts = cargos.map(c => `<option value="${c}" ${p.categoria === c ? 'selected' : ''}>${c}</option>`).join('');
+
       card.innerHTML = `
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <p class="font-semibold text-on-surface truncate">${p.nome || 'Sem nome'}</p>
-          <p class="text-label-sm text-on-surface-variant truncate">${p.matricula || '—'}${p.categoria ? ' • ' + p.categoria : ''}</p>
-          ${p.isAdmin ? `<span class="inline-block mt-1 px-sm py-0.5 rounded-full text-label-xs font-semibold bg-primary/10 text-primary">Super admin</span>` : ''}
+          <p class="text-label-sm text-on-surface-variant truncate">${p.matricula || '—'}</p>
+          <div class="flex items-center gap-2 mt-1 flex-wrap">
+            <label class="text-label-xs text-outline">Cargo:</label>
+            <select class="usr-cargo h-7 pl-2 pr-6 text-label-sm rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface focus:outline-none focus:border-primary" data-id="${p.id}" title="Alterar cargo">${cargoOpts}</select>
+            ${p.isAdmin ? `<span class="px-sm py-0.5 rounded-full text-label-xs font-semibold bg-primary/10 text-primary">Super admin</span>` : ''}
+          </div>
         </div>
         <div class="flex-shrink-0">${acao}</div>
       `;
       list.appendChild(card);
+    });
+
+    list.querySelectorAll('.usr-cargo').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const id = sel.dataset.id;
+        const cargo = sel.value;
+        const alvo = perfis.find(x => x.id === id);
+        const anterior = alvo ? alvo.categoria : null;
+        sel.disabled = true;
+        try {
+          await ChronosState.setUserCategoria(id, cargo);
+          if (alvo) alvo.categoria = cargo;
+          ChronosUI.showToast('Cargo atualizado.', 'success', 1500);
+        } catch (err) {
+          sel.value = anterior || 'IC';
+          ChronosUI.showToast('Erro ao atualizar cargo: ' + (err.message || ''), 'error');
+        } finally {
+          sel.disabled = false;
+        }
+      });
     });
 
     list.querySelectorAll('.btn-usr-toggle').forEach(btn => {
@@ -1182,11 +1285,174 @@
 
   $('usr-search').addEventListener('input', e => { usrFiltro = e.target.value; renderUsuarios(); });
 
+  // ════════════ ABA 6: LOGS DE AUDITORIA ════════════
+  let logsAll = [], logsLoaded = false, logsFiltro = '';
+  const fmtDia = iso => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+
+  const LOG_META = {
+    promoveu_admin:  { icon: 'shield_person',   color: 'text-primary',   verbo: (alvo)   => `tornou ${alvo} super admin` },
+    removeu_admin:   { icon: 'remove_moderator',color: 'text-error',     verbo: (alvo)   => `removeu o super admin de ${alvo}` },
+    registrou_ponto: { icon: 'more_time',       color: 'text-secondary', verbo: (alvo,d) => `registrou o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    corrigiu_ponto:  { icon: 'edit_calendar',   color: 'text-secondary', verbo: (alvo,d) => `corrigiu o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    excluiu_ponto:   { icon: 'delete',          color: 'text-error',     verbo: (alvo,d) => `excluiu o ponto de ${alvo}${d.data ? ' (' + fmtDia(d.data) + ')' : ''}` },
+    criou_convite:   { icon: 'add_link',        color: 'text-primary',   verbo: (alvo,d) => `criou um convite${(d.nome || d.email) ? ' para ' + (d.nome || d.email) : ''}` },
+    excluiu_convite: { icon: 'link_off',        color: 'text-error',     verbo: (alvo,d) => `excluiu um convite${(d.nome || d.email) ? ' de ' + (d.nome || d.email) : ''}` },
+    criou_local:     { icon: 'add_location_alt',color: 'text-primary',   verbo: (alvo,d) => `criou o local "${d.nome || '—'}"` },
+    editou_local:    { icon: 'edit_location_alt',color:'text-secondary', verbo: (alvo,d) => `editou o local "${d.nome || '—'}"${d.raio_metros ? ' (raio ' + d.raio_metros + 'm)' : ''}` },
+    excluiu_local:   { icon: 'wrong_location',  color: 'text-error',     verbo: (alvo,d) => `excluiu o local "${d.nome || '—'}"` },
+  };
+
+  function drawLogs() {
+    const list = $('logs-list'), empty = $('logs-empty');
+    const nomePorId = Object.fromEntries(perfis.map(p => [p.id, p.nome]));
+    const fmtWhen = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const termo = logsFiltro.trim().toLowerCase();
+    list.innerHTML = '';
+
+    const rows = logsAll.map(l => {
+      const meta = LOG_META[l.action] || { icon: 'bolt', color: 'text-on-surface-variant', verbo: () => l.action };
+      const d = l.details || {};
+      const actor = nomePorId[l.actor_id] || 'Administrador';
+      const alvo = nomePorId[l.target_user_id] || d.nome || d.matricula || 'usuário';
+      const texto = `${actor} ${meta.verbo(alvo, d)}`;
+      return { meta, texto, when: fmtWhen(l.created_at) };
+    }).filter(r => !termo || r.texto.toLowerCase().includes(termo));
+
+    if (rows.length === 0) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    rows.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm flex items-start gap-md';
+      card.innerHTML = `
+        <span class="material-symbols-outlined ${r.meta.color} flex-shrink-0">${r.meta.icon}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-body-md text-on-surface break-words">${r.texto}</p>
+          <p class="text-label-sm text-on-surface-variant mt-0.5">${r.when}</p>
+        </div>`;
+      list.appendChild(card);
+    });
+  }
+
+  async function renderLogs() {
+    if (!perfis.length) { try { await loadProfiles(); } catch (e) {} }
+    try {
+      logsAll = await ChronosState.listAuditLogs({ limit: 150 });
+      logsLoaded = true;
+    } catch (err) {
+      ChronosUI.showToast('Erro ao carregar logs: ' + (err.message || ''), 'error');
+      return;
+    }
+    drawLogs();
+  }
+
+  $('logs-search').addEventListener('input', e => { logsFiltro = e.target.value; drawLogs(); });
+  $('btn-logs-refresh').addEventListener('click', async () => {
+    const ic = $('logs-refresh-icon');
+    ic.classList.add('animate-spin');
+    await renderLogs();
+    ic.classList.remove('animate-spin');
+  });
+  // Carrega sob demanda na primeira vez que abrir a aba
+  $('tab-logs').addEventListener('click', () => { if (!logsLoaded) renderLogs(); });
+
+  // ════════════ ABA 7: CORREÇÕES ════════════
+  let corLoaded = false, corShowAll = false;
+  const escH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const COR_ST = {
+    pendente:  { txt: 'Pendente',  cls: 'bg-secondary/10 text-secondary' },
+    aprovado:  { txt: 'Aprovado',  cls: 'bg-tertiary/10 text-tertiary' },
+    rejeitado: { txt: 'Rejeitado', cls: 'bg-error/10 text-error' },
+  };
+
+  async function updateCorBadge() {
+    try {
+      const pend = await ChronosState.listCorrections({ onlyPending: true });
+      const badge = $('cor-badge');
+      if (pend.length > 0) { badge.textContent = pend.length > 9 ? '9+' : String(pend.length); badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    } catch (e) {}
+  }
+
+  async function renderCorrecoes() {
+    const list = $('correcoes-list'), empty = $('correcoes-empty');
+    list.innerHTML = '';
+    let items = [];
+    try { items = await ChronosState.listCorrections({ onlyPending: !corShowAll }); }
+    catch (err) { ChronosUI.showToast('Erro ao carregar correções: ' + (err.message || ''), 'error'); return; }
+    corLoaded = true;
+    if (!items.length) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    const porId = Object.fromEntries(perfis.map(p => [p.id, p]));
+    const labels = { entrada:'Entrada', almoco:'Almoço', retorno:'Retorno', saida:'Saída' };
+    const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit' });
+
+    items.forEach(it => {
+      const p = porId[it.user_id] || {};
+      const st = COR_ST[it.status] || COR_ST.pendente;
+      const horarios = ['entrada','almoco','retorno','saida'].filter(k => it[k]).map(k => `${labels[k]}: ${String(it[k]).slice(0,5)}`).join(' · ') || '—';
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-sm';
+      card.innerHTML = `
+        <div class="flex justify-between items-start gap-md">
+          <div class="min-w-0">
+            <p class="font-semibold text-on-surface truncate">${escH(p.nome || 'Usuário')} <span class="text-on-surface-variant font-normal">— ${escH(p.matricula || '')}</span></p>
+            <p class="text-label-sm text-on-surface-variant capitalize">${fmtDate(it.data)}</p>
+          </div>
+          <span class="px-sm py-1 rounded-full text-label-xs font-semibold flex-shrink-0 ${st.cls}">${st.txt}</span>
+        </div>
+        <p class="text-body-md text-on-surface">${escH(horarios)}</p>
+        <p class="text-label-sm text-on-surface-variant italic">"${escH(it.motivo)}"</p>
+        ${it.resposta ? `<p class="text-label-sm text-on-surface-variant">Resposta: ${escH(it.resposta)}</p>` : ''}
+        ${it.status === 'pendente' ? `
+        <div class="flex gap-sm pt-xs">
+          <button class="btn-cor-aprovar flex-1 h-11 rounded-xl bg-primary text-on-primary font-semibold flex items-center justify-center gap-1 hover:bg-primary-container transition-colors" data-id="${it.id}">
+            <span class="material-symbols-outlined text-[18px]">check</span> Aprovar
+          </button>
+          <button class="btn-cor-rejeitar flex-1 h-11 rounded-xl border border-error/40 text-error font-semibold flex items-center justify-center gap-1 hover:bg-error/10 transition-colors" data-id="${it.id}">
+            <span class="material-symbols-outlined text-[18px]">close</span> Rejeitar
+          </button>
+        </div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.btn-cor-aprovar').forEach(b => b.addEventListener('click', () => review(b.dataset.id, true, b)));
+    list.querySelectorAll('.btn-cor-rejeitar').forEach(b => b.addEventListener('click', () => {
+      const motivo = prompt('Motivo da rejeição (opcional):');
+      if (motivo === null) return; // cancelou
+      review(b.dataset.id, false, b, motivo);
+    }));
+  }
+
+  async function review(id, aprovar, btn, resposta) {
+    btn.disabled = true;
+    try {
+      await ChronosState.reviewCorrection(id, aprovar, resposta || null);
+      ChronosUI.showToast(aprovar ? 'Correção aprovada e aplicada ao ponto.' : 'Solicitação rejeitada.', aprovar ? 'success' : 'info');
+      await renderCorrecoes();
+      await updateCorBadge();
+    } catch (err) {
+      btn.disabled = false;
+      ChronosUI.showToast(err.message || 'Não foi possível revisar.', 'error');
+    }
+  }
+
+  $('cor-show-all').addEventListener('change', e => { corShowAll = e.target.checked; renderCorrecoes(); });
+  $('btn-cor-refresh').addEventListener('click', async () => {
+    const ic = $('cor-refresh-icon'); ic.classList.add('animate-spin');
+    await renderCorrecoes(); await updateCorBadge();
+    ic.classList.remove('animate-spin');
+  });
+  $('tab-correcoes').addEventListener('click', () => { if (!corLoaded) renderCorrecoes(); });
+
   // ── Init ──────────────────────────────────────────────────────────────────
   await loadProfiles();
   await renderLocations();
   await renderInvites();
   renderUsuarios();
+  await updateCorBadge();
   switchTab('pontos');
   ChronosUI.setupMicroInteractions();
 })();

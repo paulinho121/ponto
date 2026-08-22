@@ -48,9 +48,14 @@
       <p class="text-label-sm text-on-surface-variant" id="header-role">—</p>
     </div>
   </div>
-  <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
-    <span class="material-symbols-outlined text-primary">notifications</span>
-  </button>
+  <div class="flex items-center gap-1">
+    <button data-theme-toggle class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Alternar tema claro/escuro" title="Tema">
+      <span class="material-symbols-outlined text-on-surface-variant theme-ico">dark_mode</span>
+    </button>
+    <button id="btn-notifications" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-200" aria-label="Notificações">
+      <span class="material-symbols-outlined text-primary">notifications</span>
+    </button>
+  </div>
 </header>
 
 <!-- Conteúdo Principal -->
@@ -90,38 +95,58 @@
     </div>
 
     <!-- Entrada -->
-    <div id="card-entrada" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square">
-      <span class="material-symbols-outlined text-primary text-[28px]">login</span>
+    <div id="card-entrada" class="status-card relative p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm flex flex-col gap-4 transition-all duration-300">
+      <div class="flex items-start justify-between">
+        <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-[24px]">login</span>
+        </div>
+        <span class="card-check material-symbols-outlined text-tertiary text-[22px] opacity-0 transition-opacity duration-300" style="font-variation-settings:'FILL' 1">check_circle</span>
+      </div>
       <div>
-        <p class="text-label-sm text-on-surface-variant">Entrada</p>
-        <p id="time-entrada" class="text-title-md font-bold text-on-surface">--:--</p>
+        <p class="text-label-sm text-on-surface-variant uppercase tracking-wide">Entrada</p>
+        <p id="time-entrada" class="text-[30px] font-bold text-outline-variant tabular-nums leading-tight">--:--</p>
       </div>
     </div>
 
     <!-- Almoço -->
-    <div id="card-almoco" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
-      <span class="material-symbols-outlined text-secondary text-[28px]">restaurant</span>
+    <div id="card-almoco" class="status-card relative p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm flex flex-col gap-4 transition-all duration-300">
+      <div class="flex items-start justify-between">
+        <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary text-[24px]">restaurant</span>
+        </div>
+        <span class="card-check material-symbols-outlined text-tertiary text-[22px] opacity-0 transition-opacity duration-300" style="font-variation-settings:'FILL' 1">check_circle</span>
+      </div>
       <div>
-        <p class="text-label-sm text-on-surface-variant">Almoço</p>
-        <p id="time-almoco" class="text-title-md font-bold text-on-surface">--:--</p>
+        <p class="text-label-sm text-on-surface-variant uppercase tracking-wide">Almoço</p>
+        <p id="time-almoco" class="text-[30px] font-bold text-outline-variant tabular-nums leading-tight">--:--</p>
       </div>
     </div>
 
     <!-- Retorno -->
-    <div id="card-retorno" class="p-md bg-white border border-outline-variant/30 rounded-xl shadow-sm flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
-      <span class="material-symbols-outlined text-secondary text-[28px]">keyboard_return</span>
+    <div id="card-retorno" class="status-card relative p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm flex flex-col gap-4 transition-all duration-300">
+      <div class="flex items-start justify-between">
+        <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary text-[24px]">keyboard_return</span>
+        </div>
+        <span class="card-check material-symbols-outlined text-tertiary text-[22px] opacity-0 transition-opacity duration-300" style="font-variation-settings:'FILL' 1">check_circle</span>
+      </div>
       <div>
-        <p class="text-label-sm text-on-surface-variant">Retorno</p>
-        <p id="time-retorno" class="text-title-md font-bold text-on-surface">--:--</p>
+        <p class="text-label-sm text-on-surface-variant uppercase tracking-wide">Retorno</p>
+        <p id="time-retorno" class="text-[30px] font-bold text-outline-variant tabular-nums leading-tight">--:--</p>
       </div>
     </div>
 
     <!-- Saída -->
-    <div id="card-saida" class="p-md bg-surface-container-low/50 border border-dashed border-outline-variant rounded-xl flex flex-col justify-between aspect-square opacity-40 transition-opacity duration-500">
-      <span class="material-symbols-outlined text-outline text-[28px]">logout</span>
+    <div id="card-saida" class="status-card relative p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm flex flex-col gap-4 transition-all duration-300">
+      <div class="flex items-start justify-between">
+        <div class="w-11 h-11 rounded-xl bg-tertiary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary text-[24px]">logout</span>
+        </div>
+        <span class="card-check material-symbols-outlined text-tertiary text-[22px] opacity-0 transition-opacity duration-300" style="font-variation-settings:'FILL' 1">check_circle</span>
+      </div>
       <div>
-        <p class="text-label-sm text-on-surface-variant">Saída</p>
-        <p id="time-saida" class="text-title-md font-bold text-outline-variant">--:--</p>
+        <p class="text-label-sm text-on-surface-variant uppercase tracking-wide">Saída</p>
+        <p id="time-saida" class="text-[30px] font-bold text-outline-variant tabular-nums leading-tight">--:--</p>
       </div>
     </div>
   </div>
@@ -215,18 +240,34 @@
 
   function renderAll() {
     const times = { entrada: record.entrada, almoco: record.almoco, retorno: record.retorno, saida: record.saida };
+    const proximo = ChronosState.getNextPunchAction(record); // entrada|almoco|retorno|saida|done
 
     ['entrada','almoco','retorno','saida'].forEach(key => {
       const el = document.getElementById(`time-${key}`);
       const card = document.getElementById(`card-${key}`);
-      if (times[key]) {
-        el.textContent = times[key];
-        el.classList.replace('text-outline-variant', 'text-on-surface');
-        card.classList.remove('opacity-40');
-        card.classList.add('opacity-100');
+      const check = card.querySelector('.card-check');
+      const done = !!times[key];
+      const isNext = key === proximo;
+
+      el.textContent = done ? times[key] : '--:--';
+
+      // Reseta estados antes de reaplicar
+      card.classList.remove('opacity-40', 'ring-2', 'ring-primary', 'border-primary', 'border-outline-variant/30');
+      el.classList.remove('text-outline-variant', 'text-on-surface');
+
+      if (done) {
+        card.classList.add('border-outline-variant/30');
+        el.classList.add('text-on-surface');
+        check.classList.remove('opacity-0');
       } else {
-        el.textContent = '--:--';
-        card.classList.add('opacity-40');
+        check.classList.add('opacity-0');
+        el.classList.add('text-outline-variant');
+        if (isNext) {
+          // Próximo passo em destaque
+          card.classList.add('ring-2', 'ring-primary', 'border-primary');
+        } else {
+          card.classList.add('opacity-40', 'border-outline-variant/30');
+        }
       }
     });
 
