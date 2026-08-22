@@ -77,10 +77,10 @@ begin
     insert into public.ponto_registros (user_id, data, entrada, almoco, retorno, saida)
     values (v_ped.user_id, v_ped.data, v_ped.entrada, v_ped.almoco, v_ped.retorno, v_ped.saida)
     on conflict (user_id, data) do update set
-      entrada = coalesce(excluded.entrada, public.ponto_registros.entrada),
-      almoco  = coalesce(excluded.almoco,  public.ponto_registros.almoco),
-      retorno = coalesce(excluded.retorno, public.ponto_registros.retorno),
-      saida   = coalesce(excluded.saida,   public.ponto_registros.saida),
+      entrada = coalesce(excluded.entrada, ponto_registros.entrada),
+      almoco  = coalesce(excluded.almoco,  ponto_registros.almoco),
+      retorno = coalesce(excluded.retorno, ponto_registros.retorno),
+      saida   = coalesce(excluded.saida,   ponto_registros.saida),
       updated_at = now();
   end if;
 
