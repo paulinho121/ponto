@@ -256,9 +256,18 @@
     return total;
   }
 
+  // Regra do cargo IC: sábado com atividade conta como 4h (240 min) fixas.
+  function isSabadoIC(r) {
+    return user?.categoria === 'IC' && new Date(r.date).getDay() === 6 && !!r.entrada;
+  }
+  // Minutos que o dia "vale" para totais/saldo (aplica a regra do sábado IC).
+  function countedMinutes(r) {
+    if (isSabadoIC(r)) return 240;
+    return calcRecordDuration(r);
+  }
+
   function isComplete(r, minTarget) {
-    const d = calcRecordDuration(r);
-    return d >= minTarget * 0.9; // 90% da meta
+    return countedMinutes(r) >= minTarget * 0.9; // 90% da meta
   }
 
   // ── Renderizar registros ──────────────────────────────────────────────────
@@ -296,7 +305,8 @@
       const dia = r.dia || d.getDate();
       const mes = r.mes || MONTHS_PT[d.getMonth()].slice(0, 3);
       const weekday = r.weekday || d.toLocaleDateString('pt-BR', { weekday:'long' });
-      const durMin  = calcRecordDuration(r);
+      const sabIC   = isSabadoIC(r);
+      const durMin  = countedMinutes(r);
       const complete = durMin > 0 && isComplete(r, metaMin);
       const hasTimes = r.entrada;
 
@@ -310,20 +320,24 @@
         timeLine = `Entrada: ${r.entrada}`;
       }
 
-      const badgeClass = !hasTimes
-        ? 'bg-outline-variant/20 text-on-surface-variant'
-        : complete
-          ? 'bg-tertiary/10 text-tertiary'
-          : 'bg-error/10 text-error';
-      const badgeText = !hasTimes ? 'Ausente' : complete ? 'Completo' : 'Incompleto';
+      const badgeClass = sabIC
+        ? 'bg-secondary/15 text-secondary'
+        : !hasTimes
+          ? 'bg-outline-variant/20 text-on-surface-variant'
+          : complete
+            ? 'bg-tertiary/10 text-tertiary'
+            : 'bg-error/10 text-error';
+      const badgeText = sabIC ? 'Sábado · 4h' : (!hasTimes ? 'Ausente' : complete ? 'Completo' : 'Incompleto');
 
       const card = document.createElement('div');
-      card.className = `record-card p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer ${!hasTimes ? 'opacity-60' : ''}`;
+      card.className = `record-card p-md border rounded-xl flex items-center justify-between transition-all cursor-pointer ${
+        sabIC ? 'bg-secondary/5 border-secondary/40 border-l-4 border-l-secondary' : 'bg-surface-container-lowest border-outline-variant/30 hover:border-primary/30'
+      } ${!hasTimes ? 'opacity-60' : ''}`;
       card.innerHTML = `
         <div class="flex items-center gap-md">
-          <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex flex-col items-center justify-center flex-shrink-0">
-            <span class="text-label-xs text-on-surface-variant uppercase">${mes}</span>
-            <span class="text-title-md font-bold text-on-surface">${dia}</span>
+          <div class="w-12 h-12 rounded-xl ${sabIC ? 'bg-secondary/15' : 'bg-surface-container-highest'} flex flex-col items-center justify-center flex-shrink-0">
+            <span class="text-label-xs ${sabIC ? 'text-secondary' : 'text-on-surface-variant'} uppercase">${mes}</span>
+            <span class="text-title-md font-bold ${sabIC ? 'text-secondary' : 'text-on-surface'}">${dia}</span>
           </div>
           <div>
             <p class="text-body-md font-semibold text-on-surface capitalize">${weekday}</p>
@@ -343,8 +357,8 @@
 
   // ── Resumo do mês ─────────────────────────────────────────────────────────
   function updateSummary(records) {
-    const withWork = records.filter(r => r.entrada && calcRecordDuration(r) > 0);
-    const totalMin = withWork.reduce((acc, r) => acc + calcRecordDuration(r), 0);
+    const withWork = records.filter(r => r.entrada && countedMinutes(r) > 0);
+    const totalMin = withWork.reduce((acc, r) => acc + countedMinutes(r), 0);
     const metaMes  = metaMin * 22;
     const pct      = Math.min(100, Math.round((totalMin / metaMes) * 100));
 
@@ -377,8 +391,8 @@
     return s + ChronosUI.formatDuration(Math.abs(Math.round(min)));
   }
   function updateBank() {
-    const worked = allRecords.filter(r => r.entrada && calcRecordDuration(r) > 0);
-    const saldo = worked.reduce((acc, r) => acc + (calcRecordDuration(r) - metaMin), 0);
+    const worked = allRecords.filter(r => r.entrada && countedMinutes(r) > 0);
+    const saldo = worked.reduce((acc, r) => acc + (countedMinutes(r) - metaMin), 0);
     const el = document.getElementById('bank-total');
     el.textContent = formatSaldo(saldo);
     el.className = `text-headline-lg-mobile font-bold flex-shrink-0 tabular-nums ${saldo >= 0 ? 'text-tertiary' : 'text-error'}`;
@@ -397,7 +411,7 @@
     const lines = [header.join(';')];
     rows.forEach(r => {
       const d = new Date(r.date);
-      const dur = calcRecordDuration(r);
+      const dur = countedMinutes(r);
       const worked = r.entrada && dur > 0;
       lines.push([
         d.toLocaleDateString('pt-BR'),
