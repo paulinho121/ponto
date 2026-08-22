@@ -63,6 +63,20 @@
     </div>
   </section>
 
+  <!-- Banco de horas (acumulado) -->
+  <div class="p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm flex items-center justify-between gap-md slide-up">
+    <div class="flex items-center gap-sm min-w-0">
+      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-primary">savings</span>
+      </div>
+      <div class="min-w-0">
+        <p class="text-label-sm text-on-surface-variant leading-tight">Banco de horas</p>
+        <p class="text-label-xs text-outline leading-tight">Saldo acumulado nos dias registrados</p>
+      </div>
+    </div>
+    <p id="bank-total" class="text-headline-lg-mobile font-bold text-tertiary flex-shrink-0 tabular-nums">+0h 00min</p>
+  </div>
+
   <!-- Resumo Mensal -->
   <div id="monthly-summary" class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-md slide-up" style="animation-delay:.05s">
     <div class="flex justify-between items-center">
@@ -82,14 +96,21 @@
     <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
       <div id="summary-bar" class="bg-tertiary-container h-full rounded-full" style="width:0%; transition:width 1s ease-out"></div>
     </div>
+    <div class="flex items-center justify-between pt-xs border-t border-outline-variant/20">
+      <span class="text-label-sm text-on-surface-variant flex items-center gap-1">
+        Saldo do mês
+        <span class="material-symbols-outlined text-[15px] text-outline" title="Diferença entre o que você trabalhou e a meta diária, somada nos dias em que registrou ponto.">info</span>
+      </span>
+      <span id="summary-saldo" class="text-body-lg font-bold text-tertiary tabular-nums">+0h 00min</span>
+    </div>
   </div>
 
   <!-- Lista de Registros -->
   <section class="space-y-md slide-up" style="animation-delay:.1s">
     <div class="flex justify-between items-center">
       <h2 class="text-title-md font-semibold text-on-surface">Registros</h2>
-      <button id="btn-filter" class="text-primary text-label-sm flex items-center gap-xs hover:underline underline-offset-4">
-        Filtrar <span class="material-symbols-outlined text-[16px]">filter_list</span>
+      <button id="btn-export" class="text-primary text-label-sm font-semibold flex items-center gap-xs hover:underline underline-offset-4" title="Exportar este mês em CSV">
+        <span class="material-symbols-outlined text-[16px]">download</span> Exportar
       </button>
     </div>
 
@@ -281,6 +302,12 @@
     document.getElementById('summary-meta').textContent  = ChronosUI.formatDuration(metaMes);
     document.getElementById('summary-bar').style.width   = `${pct}%`;
 
+    // Saldo do mês: trabalhado − meta diária × dias com registro
+    const saldoMes = totalMin - metaMin * withWork.length;
+    const saldoEl = document.getElementById('summary-saldo');
+    saldoEl.textContent = formatSaldo(saldoMes);
+    saldoEl.className = `text-body-lg font-bold tabular-nums ${saldoMes >= 0 ? 'text-tertiary' : 'text-error'}`;
+
     const badge = document.getElementById('summary-badge');
     if (pct >= 90) {
       badge.textContent = 'Carga Completa';
@@ -294,20 +321,67 @@
     }
   }
 
+  // ── Banco de horas (acumulado, sobre todo o histórico) ────────────────────
+  function formatSaldo(min) {
+    const s = min >= 0 ? '+' : '−';
+    return s + ChronosUI.formatDuration(Math.abs(Math.round(min)));
+  }
+  function updateBank() {
+    const worked = allRecords.filter(r => r.entrada && calcRecordDuration(r) > 0);
+    const saldo = worked.reduce((acc, r) => acc + (calcRecordDuration(r) - metaMin), 0);
+    const el = document.getElementById('bank-total');
+    el.textContent = formatSaldo(saldo);
+    el.className = `text-headline-lg-mobile font-bold flex-shrink-0 tabular-nums ${saldo >= 0 ? 'text-tertiary' : 'text-error'}`;
+  }
+
+  // ── Exportar o próprio relatório (CSV do mês selecionado) ──────────────────
+  function exportCSV() {
+    const rows = allRecords
+      .filter(r => monthKey(new Date(r.date)) === selectedKey)
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (rows.length === 0) {
+      ChronosUI.showToast('Nenhum registro neste mês para exportar.', 'info');
+      return;
+    }
+    const header = ['Data', 'Dia da semana', 'Entrada', 'Almoço', 'Retorno', 'Saída', 'Horas trabalhadas', 'Saldo do dia'];
+    const lines = [header.join(';')];
+    rows.forEach(r => {
+      const d = new Date(r.date);
+      const dur = calcRecordDuration(r);
+      const worked = r.entrada && dur > 0;
+      lines.push([
+        d.toLocaleDateString('pt-BR'),
+        d.toLocaleDateString('pt-BR', { weekday: 'long' }),
+        r.entrada || '', r.almoco || '', r.retorno || '', r.saida || '',
+        worked ? ChronosUI.formatDuration(dur) : '',
+        worked ? formatSaldo(dur - metaMin) : '',
+      ].join(';'));
+    });
+    const csv = '﻿' + lines.join('\r\n'); // BOM p/ acentos abrirem certo no Excel
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ponto_${(user?.matricula || 'meu').replace(/\W+/g, '')}_${selectedKey}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    ChronosUI.showToast('Relatório exportado!', 'success');
+  }
+
   // ── Busca ─────────────────────────────────────────────────────────────────
   document.getElementById('search-input').addEventListener('input', e => {
     renderRecords(e.target.value);
   });
 
-  document.getElementById('btn-filter').addEventListener('click', () => {
-    ChronosUI.showToast('Filtros avançados em breve!', 'info');
-  });
+  document.getElementById('btn-export').addEventListener('click', exportCSV);
 
   ChronosUI.initNotifications();
 
   // ── Init ──────────────────────────────────────────────────────────────────
   buildMonthTabs();
   renderRecords();
+  updateBank();
   ChronosUI.setupMicroInteractions();
 })();
 </script>
