@@ -1221,15 +1221,42 @@
               <span class="material-symbols-outlined text-[16px]">add_moderator</span> Tornar admin
             </button>`;
 
+      const cargos = ['Orientador', 'PG', 'IC', 'PQ'];
+      const cargoOpts = cargos.map(c => `<option value="${c}" ${p.categoria === c ? 'selected' : ''}>${c}</option>`).join('');
+
       card.innerHTML = `
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <p class="font-semibold text-on-surface truncate">${p.nome || 'Sem nome'}</p>
-          <p class="text-label-sm text-on-surface-variant truncate">${p.matricula || '—'}${p.categoria ? ' • ' + p.categoria : ''}</p>
-          ${p.isAdmin ? `<span class="inline-block mt-1 px-sm py-0.5 rounded-full text-label-xs font-semibold bg-primary/10 text-primary">Super admin</span>` : ''}
+          <p class="text-label-sm text-on-surface-variant truncate">${p.matricula || '—'}</p>
+          <div class="flex items-center gap-2 mt-1 flex-wrap">
+            <label class="text-label-xs text-outline">Cargo:</label>
+            <select class="usr-cargo h-7 pl-2 pr-6 text-label-sm rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface focus:outline-none focus:border-primary" data-id="${p.id}" title="Alterar cargo">${cargoOpts}</select>
+            ${p.isAdmin ? `<span class="px-sm py-0.5 rounded-full text-label-xs font-semibold bg-primary/10 text-primary">Super admin</span>` : ''}
+          </div>
         </div>
         <div class="flex-shrink-0">${acao}</div>
       `;
       list.appendChild(card);
+    });
+
+    list.querySelectorAll('.usr-cargo').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        const id = sel.dataset.id;
+        const cargo = sel.value;
+        const alvo = perfis.find(x => x.id === id);
+        const anterior = alvo ? alvo.categoria : null;
+        sel.disabled = true;
+        try {
+          await ChronosState.setUserCategoria(id, cargo);
+          if (alvo) alvo.categoria = cargo;
+          ChronosUI.showToast('Cargo atualizado.', 'success', 1500);
+        } catch (err) {
+          sel.value = anterior || 'IC';
+          ChronosUI.showToast('Erro ao atualizar cargo: ' + (err.message || ''), 'error');
+        } finally {
+          sel.disabled = false;
+        }
+      });
     });
 
     list.querySelectorAll('.btn-usr-toggle').forEach(btn => {

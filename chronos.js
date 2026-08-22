@@ -436,6 +436,14 @@ const ChronosState = {
     if (error) throw new Error(error.message || 'Não foi possível alterar o privilégio.');
   },
 
+  // Admin altera o cargo (categoria) de um usuário. RLS de admin já permite
+  // atualizar perfis de outros; o CHECK aceita Orientador/PG/IC/PQ.
+  async setUserCategoria(userId, categoria) {
+    const { error } = await window.chronosSupabase
+      .from('profiles').update({ categoria }).eq('id', userId);
+    if (error) throw new Error(error.message || 'Não foi possível atualizar o cargo.');
+  },
+
   // Logs de auditoria (só super admin — garantido pelo RLS). Os nomes de quem
   // fez / quem foi afetado são resolvidos no cliente a partir da lista de perfis.
   async listAuditLogs({ limit = 150 } = {}) {
