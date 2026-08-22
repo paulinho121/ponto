@@ -19,7 +19,7 @@
   document.documentElement.classList.toggle('dark', preferred() === 'dark');
 
   var VARS_LIGHT = ":root{--c-primary:19 32 88;--c-on-primary:255 255 255;--c-primary-container:219 224 255;--c-on-primary-container:0 18 77;--c-primary-fixed:219 224 255;--c-primary-fixed-dim:178 188 255;--c-on-primary-fixed:0 18 77;--c-on-primary-fixed-variant:47 60 126;--c-secondary:85 97 143;--c-on-secondary:255 255 255;--c-secondary-container:218 225 255;--c-on-secondary-container:22 27 55;--c-secondary-fixed:218 225 255;--c-secondary-fixed-dim:179 193 244;--c-on-secondary-fixed:22 27 55;--c-on-secondary-fixed-variant:61 74 104;--c-tertiary:246 168 18;--c-on-tertiary:59 44 0;--c-tertiary-container:255 231 176;--c-on-tertiary-container:42 30 0;--c-tertiary-fixed:255 231 176;--c-tertiary-fixed-dim:246 201 94;--c-on-tertiary-fixed:40 28 0;--c-on-tertiary-fixed-variant:92 71 0;--c-error:186 26 26;--c-on-error:255 255 255;--c-error-container:255 218 214;--c-on-error-container:147 0 10;--c-background:250 248 255;--c-on-background:19 27 46;--c-surface:250 248 255;--c-surface-dim:214 217 238;--c-surface-bright:250 248 255;--c-surface-container-lowest:255 255 255;--c-surface-container-low:243 244 255;--c-surface-container:236 238 254;--c-surface-container-high:230 232 248;--c-surface-container-highest:224 227 242;--c-on-surface:19 27 46;--c-on-surface-variant:67 70 86;--c-outline:115 118 136;--c-outline-variant:195 198 215;--c-inverse-surface:40 48 68;--c-inverse-on-surface:238 240 255;--c-inverse-primary:178 188 255;--c-surface-tint:19 32 88;--c-surface-variant:224 227 242;}";
-  var VARS_DARK = "html.dark{--c-primary:74 92 200;--c-on-primary:255 255 255;--c-primary-container:43 54 114;--c-on-primary-container:219 224 255;--c-primary-fixed:219 224 255;--c-primary-fixed-dim:178 188 255;--c-on-primary-fixed:0 18 77;--c-on-primary-fixed-variant:200 208 255;--c-secondary:155 166 214;--c-on-secondary:255 255 255;--c-secondary-container:46 54 82;--c-on-secondary-container:218 225 255;--c-secondary-fixed:218 225 255;--c-secondary-fixed-dim:179 193 244;--c-on-secondary-fixed:218 225 255;--c-on-secondary-fixed-variant:179 193 244;--c-tertiary:251 183 51;--c-on-tertiary:59 44 0;--c-tertiary-container:74 58 14;--c-on-tertiary-container:255 231 176;--c-tertiary-fixed:255 231 176;--c-tertiary-fixed-dim:246 201 94;--c-on-tertiary-fixed:40 28 0;--c-on-tertiary-fixed-variant:246 201 94;--c-error:226 77 77;--c-on-error:255 255 255;--c-error-container:92 20 20;--c-on-error-container:255 218 214;--c-background:14 20 36;--c-on-background:228 231 244;--c-surface:14 20 36;--c-surface-dim:10 15 28;--c-surface-bright:35 44 68;--c-surface-container-lowest:11 17 31;--c-surface-container-low:21 29 49;--c-surface-container:25 34 58;--c-surface-container-high:33 43 69;--c-surface-container-highest:42 52 79;--c-on-surface:228 231 244;--c-on-surface-variant:180 186 208;--c-outline:139 144 166;--c-outline-variant:57 65 90;--c-inverse-surface:228 231 244;--c-inverse-on-surface:40 48 68;--c-inverse-primary:19 32 88;--c-surface-tint:74 92 200;--c-surface-variant:42 52 79;}";
+  var VARS_DARK = "html.dark{--c-primary:74 92 200;--c-on-primary:255 255 255;--c-primary-container:43 54 114;--c-on-primary-container:219 224 255;--c-primary-fixed:219 224 255;--c-primary-fixed-dim:178 188 255;--c-on-primary-fixed:0 18 77;--c-on-primary-fixed-variant:200 208 255;--c-secondary:155 166 214;--c-on-secondary:255 255 255;--c-secondary-container:46 54 82;--c-on-secondary-container:218 225 255;--c-secondary-fixed:218 225 255;--c-secondary-fixed-dim:179 193 244;--c-on-secondary-fixed:218 225 255;--c-on-secondary-fixed-variant:179 193 244;--c-tertiary:251 183 51;--c-on-tertiary:59 44 0;--c-tertiary-container:74 58 14;--c-on-tertiary-container:255 231 176;--c-tertiary-fixed:255 231 176;--c-tertiary-fixed-dim:246 201 94;--c-on-tertiary-fixed:40 28 0;--c-on-tertiary-fixed-variant:246 201 94;--c-error:226 77 77;--c-on-error:255 255 255;--c-error-container:92 20 20;--c-on-error-container:255 218 214;--c-background:14 20 36;--c-on-background:228 231 244;--c-surface:14 20 36;--c-surface-dim:10 15 28;--c-surface-bright:35 44 68;--c-surface-container-lowest:11 17 31;--c-surface-container-low:21 29 49;--c-surface-container:25 34 58;--c-surface-container-high:33 43 69;--c-surface-container-highest:42 52 79;--c-on-surface:228 231 244;--c-on-surface-variant:196 202 222;--c-outline:150 156 178;--c-outline-variant:57 65 90;--c-inverse-surface:228 231 244;--c-inverse-on-surface:40 48 68;--c-inverse-primary:19 32 88;--c-surface-tint:74 92 200;--c-surface-variant:42 52 79;}";
   // Ajustes para cores "cruas" que não usam tokens — só no escuro (o claro fica igual)
   var OVERRIDES =
     ":root{color-scheme:light}html.dark{color-scheme:dark}" +
@@ -30,9 +30,18 @@
     "html.dark .bg-slate-50{background-color:#151d31 !important}" +
     "html.dark .border-slate-200{border-color:#2a3247 !important}";
 
+  // Acessibilidade (global, todas as telas):
+  //  • foco visível no teclado (sobrepõe os focus:outline-none do app)
+  //  • alvo de toque mínimo de 44px nos botões
+  //  • respeita "reduzir movimento" do sistema
+  var A11Y =
+    "*:focus-visible{outline:3px solid #f6a812 !important;outline-offset:2px !important}" +
+    "button{min-height:44px;min-width:44px}" +
+    "@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}}";
+
   var st = document.createElement('style');
   st.id = 'chronos-theme-vars';
-  st.textContent = VARS_LIGHT + VARS_DARK + OVERRIDES;
+  st.textContent = VARS_LIGHT + VARS_DARK + OVERRIDES + A11Y;
   (document.head || document.documentElement).appendChild(st);
 
   function syncUI() {
@@ -679,13 +688,17 @@ const ChronosUI = {
 
     const toast = document.createElement('div');
     toast.id = 'chronos-toast';
-    toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] 
-      bg-white/90 backdrop-blur-xl border ${colors[type]} 
-      px-lg py-sm rounded-2xl shadow-xl 
+    // Anuncia a mensagem para leitores de tela: erros de forma assertiva,
+    // demais avisos de forma educada (não interrompem).
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+    toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-[200]
+      bg-white/90 backdrop-blur-xl border ${colors[type]}
+      px-lg py-sm rounded-2xl shadow-xl
       flex items-center gap-sm
       transition-all duration-300 opacity-0 translate-y-4`;
     toast.innerHTML = `
-      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">${icons[type]}</span>
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">${icons[type]}</span>
       <span class="font-body-md text-body-md text-on-surface">${message}</span>
     `;
     document.body.appendChild(toast);
