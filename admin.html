@@ -74,6 +74,12 @@
       <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
       <span class="text-label-sm font-semibold">Usuários</span>
     </button>
+    <button id="tab-correcoes" type="button" data-panel="correcoes" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px] relative">rule
+        <span id="cor-badge" class="hidden absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+      </span>
+      <span class="text-label-sm font-semibold">Correções</span>
+    </button>
     <button id="tab-logs" type="button" data-panel="logs" class="tab-btn flex-1 min-w-[74px] h-14 flex flex-col items-center justify-center gap-0.5 border-b-2 border-transparent text-on-surface-variant">
       <span class="material-symbols-outlined text-[20px]">history_edu</span>
       <span class="text-label-sm font-semibold">Logs</span>
@@ -398,6 +404,35 @@
       <div id="usuarios-empty" class="hidden text-center py-xl">
         <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">group_off</span>
         <p class="text-body-md text-on-surface-variant mt-2">Nenhum usuário encontrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ ABA 7: CORREÇÕES ════════════ -->
+  <section id="panel-correcoes" class="tab-panel hidden space-y-lg">
+    <div class="space-y-md slide-up">
+      <div class="flex items-center justify-between gap-md">
+        <div>
+          <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-xs">
+            <span class="material-symbols-outlined text-primary">rule</span>
+            Correções de ponto
+          </h2>
+          <p class="text-label-sm text-on-surface-variant mt-1">Solicitações enviadas pelos pesquisadores. Aprovar aplica os horários ao dia.</p>
+        </div>
+        <button id="btn-cor-refresh" type="button" class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors" title="Atualizar" aria-label="Atualizar">
+          <span class="material-symbols-outlined text-on-surface-variant" id="cor-refresh-icon">refresh</span>
+        </button>
+      </div>
+
+      <label class="flex items-center gap-sm text-body-md text-on-surface-variant cursor-pointer">
+        <input type="checkbox" id="cor-show-all" class="w-5 h-5 accent-primary rounded"/>
+        Mostrar também as já revisadas
+      </label>
+
+      <div id="correcoes-list" class="space-y-sm"></div>
+      <div id="correcoes-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-[48px] text-outline-variant" style="font-variation-settings:'FILL' 1">task_alt</span>
+        <p class="text-body-md text-on-surface-variant mt-2">Nenhuma correção pendente.</p>
       </div>
     </div>
   </section>
@@ -1294,11 +1329,103 @@
   // Carrega sob demanda na primeira vez que abrir a aba
   $('tab-logs').addEventListener('click', () => { if (!logsLoaded) renderLogs(); });
 
+  // ════════════ ABA 7: CORREÇÕES ════════════
+  let corLoaded = false, corShowAll = false;
+  const escH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const COR_ST = {
+    pendente:  { txt: 'Pendente',  cls: 'bg-secondary/10 text-secondary' },
+    aprovado:  { txt: 'Aprovado',  cls: 'bg-tertiary/10 text-tertiary' },
+    rejeitado: { txt: 'Rejeitado', cls: 'bg-error/10 text-error' },
+  };
+
+  async function updateCorBadge() {
+    try {
+      const pend = await ChronosState.listCorrections({ onlyPending: true });
+      const badge = $('cor-badge');
+      if (pend.length > 0) { badge.textContent = pend.length > 9 ? '9+' : String(pend.length); badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    } catch (e) {}
+  }
+
+  async function renderCorrecoes() {
+    const list = $('correcoes-list'), empty = $('correcoes-empty');
+    list.innerHTML = '';
+    let items = [];
+    try { items = await ChronosState.listCorrections({ onlyPending: !corShowAll }); }
+    catch (err) { ChronosUI.showToast('Erro ao carregar correções: ' + (err.message || ''), 'error'); return; }
+    corLoaded = true;
+    if (!items.length) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    const porId = Object.fromEntries(perfis.map(p => [p.id, p]));
+    const labels = { entrada:'Entrada', almoco:'Almoço', retorno:'Retorno', saida:'Saída' };
+    const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit' });
+
+    items.forEach(it => {
+      const p = porId[it.user_id] || {};
+      const st = COR_ST[it.status] || COR_ST.pendente;
+      const horarios = ['entrada','almoco','retorno','saida'].filter(k => it[k]).map(k => `${labels[k]}: ${String(it[k]).slice(0,5)}`).join(' · ') || '—';
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-sm';
+      card.innerHTML = `
+        <div class="flex justify-between items-start gap-md">
+          <div class="min-w-0">
+            <p class="font-semibold text-on-surface truncate">${escH(p.nome || 'Usuário')} <span class="text-on-surface-variant font-normal">— ${escH(p.matricula || '')}</span></p>
+            <p class="text-label-sm text-on-surface-variant capitalize">${fmtDate(it.data)}</p>
+          </div>
+          <span class="px-sm py-1 rounded-full text-label-xs font-semibold flex-shrink-0 ${st.cls}">${st.txt}</span>
+        </div>
+        <p class="text-body-md text-on-surface">${escH(horarios)}</p>
+        <p class="text-label-sm text-on-surface-variant italic">"${escH(it.motivo)}"</p>
+        ${it.resposta ? `<p class="text-label-sm text-on-surface-variant">Resposta: ${escH(it.resposta)}</p>` : ''}
+        ${it.status === 'pendente' ? `
+        <div class="flex gap-sm pt-xs">
+          <button class="btn-cor-aprovar flex-1 h-11 rounded-xl bg-primary text-on-primary font-semibold flex items-center justify-center gap-1 hover:bg-primary-container transition-colors" data-id="${it.id}">
+            <span class="material-symbols-outlined text-[18px]">check</span> Aprovar
+          </button>
+          <button class="btn-cor-rejeitar flex-1 h-11 rounded-xl border border-error/40 text-error font-semibold flex items-center justify-center gap-1 hover:bg-error/10 transition-colors" data-id="${it.id}">
+            <span class="material-symbols-outlined text-[18px]">close</span> Rejeitar
+          </button>
+        </div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.btn-cor-aprovar').forEach(b => b.addEventListener('click', () => review(b.dataset.id, true, b)));
+    list.querySelectorAll('.btn-cor-rejeitar').forEach(b => b.addEventListener('click', () => {
+      const motivo = prompt('Motivo da rejeição (opcional):');
+      if (motivo === null) return; // cancelou
+      review(b.dataset.id, false, b, motivo);
+    }));
+  }
+
+  async function review(id, aprovar, btn, resposta) {
+    btn.disabled = true;
+    try {
+      await ChronosState.reviewCorrection(id, aprovar, resposta || null);
+      ChronosUI.showToast(aprovar ? 'Correção aprovada e aplicada ao ponto.' : 'Solicitação rejeitada.', aprovar ? 'success' : 'info');
+      await renderCorrecoes();
+      await updateCorBadge();
+    } catch (err) {
+      btn.disabled = false;
+      ChronosUI.showToast(err.message || 'Não foi possível revisar.', 'error');
+    }
+  }
+
+  $('cor-show-all').addEventListener('change', e => { corShowAll = e.target.checked; renderCorrecoes(); });
+  $('btn-cor-refresh').addEventListener('click', async () => {
+    const ic = $('cor-refresh-icon'); ic.classList.add('animate-spin');
+    await renderCorrecoes(); await updateCorBadge();
+    ic.classList.remove('animate-spin');
+  });
+  $('tab-correcoes').addEventListener('click', () => { if (!corLoaded) renderCorrecoes(); });
+
   // ── Init ──────────────────────────────────────────────────────────────────
   await loadProfiles();
   await renderLocations();
   await renderInvites();
   renderUsuarios();
+  await updateCorBadge();
   switchTab('pontos');
   ChronosUI.setupMicroInteractions();
 })();

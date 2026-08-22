@@ -77,6 +77,12 @@
     <p id="bank-total" class="text-headline-lg-mobile font-bold text-tertiary flex-shrink-0 tabular-nums">+0h 00min</p>
   </div>
 
+  <!-- Solicitar correção -->
+  <button id="btn-open-correcao" class="w-full h-12 rounded-2xl border border-primary/30 text-primary font-semibold flex items-center justify-center gap-sm hover:bg-primary/5 transition-colors slide-up">
+    <span class="material-symbols-outlined text-[20px]">edit_note</span>
+    Solicitar correção de ponto
+  </button>
+
   <!-- Resumo Mensal -->
   <div id="monthly-summary" class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm space-y-md slide-up" style="animation-delay:.05s">
     <div class="flex justify-between items-center">
@@ -141,6 +147,50 @@
     <span class="text-label-sm">Perfil</span>
   </a>
 </nav>
+
+<!-- Modal: Solicitar correção de ponto -->
+<div id="correcao-modal" class="hidden fixed inset-0 z-[200] items-end sm:items-center justify-center bg-black/50 px-container-margin">
+  <div class="w-full max-w-lg bg-surface-container-lowest rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div class="p-lg space-y-md">
+      <div class="flex justify-between items-center">
+        <h2 class="text-title-md font-bold text-on-surface">Solicitar correção</h2>
+        <button id="btn-close-correcao" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors" aria-label="Fechar">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+      <p class="text-label-sm text-on-surface-variant">Informe os horários corretos do dia (deixe em branco o que não se aplica). Um administrador vai revisar.</p>
+
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-data">Data *</label>
+        <input id="cor-data" type="date" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/>
+      </div>
+      <div class="grid grid-cols-2 gap-md">
+        <div class="space-y-xs"><label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-entrada">Entrada</label><input id="cor-entrada" type="time" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/></div>
+        <div class="space-y-xs"><label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-almoco">Almoço</label><input id="cor-almoco" type="time" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/></div>
+        <div class="space-y-xs"><label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-retorno">Retorno</label><input id="cor-retorno" type="time" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/></div>
+        <div class="space-y-xs"><label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-saida">Saída</label><input id="cor-saida" type="time" class="w-full h-12 px-md bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all"/></div>
+      </div>
+      <div class="space-y-xs">
+        <label class="text-label-sm text-on-surface-variant ml-1 block" for="cor-motivo">Motivo *</label>
+        <textarea id="cor-motivo" rows="3" class="w-full px-md py-sm bg-surface-container-low border border-outline-variant/50 rounded-2xl text-body-md focus:outline-none focus:border-primary transition-all" placeholder="Ex: esqueci de bater a saída"></textarea>
+      </div>
+      <div id="cor-error" class="hidden p-sm rounded-2xl bg-error-container/30 border border-error/20 flex items-center gap-sm">
+        <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings:'FILL' 1">error</span>
+        <span class="text-body-md text-error" id="cor-error-msg"></span>
+      </div>
+      <button id="btn-send-correcao" class="w-full h-14 bg-primary text-on-primary text-title-md font-semibold rounded-2xl shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
+        <span class="material-symbols-outlined" id="send-correcao-icon">send</span>
+        Enviar solicitação
+      </button>
+
+      <div class="pt-sm border-t border-outline-variant/20">
+        <h3 class="text-label-sm uppercase tracking-wider text-outline font-semibold mb-sm">Minhas solicitações</h3>
+        <div id="cor-list" class="space-y-sm"></div>
+        <p id="cor-list-empty" class="text-body-md text-on-surface-variant hidden">Você ainda não fez solicitações.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 (async () => {
@@ -377,6 +427,87 @@
   document.getElementById('btn-export').addEventListener('click', exportCSV);
 
   ChronosUI.initNotifications();
+
+  // ── Solicitar correção de ponto ───────────────────────────────────────────
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const COR_STATUS = {
+    pendente:  { txt: 'Pendente',  cls: 'bg-secondary/10 text-secondary' },
+    aprovado:  { txt: 'Aprovado',  cls: 'bg-tertiary/10 text-tertiary' },
+    rejeitado: { txt: 'Rejeitado', cls: 'bg-error/10 text-error' },
+  };
+  const corModal = document.getElementById('correcao-modal');
+
+  function openCor() {
+    document.getElementById('cor-data').max = new Date().toLocaleDateString('sv-SE');
+    document.getElementById('cor-error').classList.add('hidden');
+    corModal.classList.remove('hidden');
+    corModal.classList.add('flex');
+    renderMyCorrections();
+  }
+  function closeCor() { corModal.classList.add('hidden'); corModal.classList.remove('flex'); }
+
+  document.getElementById('btn-open-correcao').addEventListener('click', openCor);
+  document.getElementById('btn-close-correcao').addEventListener('click', closeCor);
+  corModal.addEventListener('click', e => { if (e.target === corModal) closeCor(); });
+
+  async function renderMyCorrections() {
+    const list = document.getElementById('cor-list');
+    const empty = document.getElementById('cor-list-empty');
+    list.innerHTML = '';
+    let items = [];
+    try { items = await ChronosState.listMyCorrections(); } catch (e) { return; }
+    if (!items.length) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+    const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR');
+    const labels = { entrada:'Entrada', almoco:'Almoço', retorno:'Retorno', saida:'Saída' };
+    items.forEach(it => {
+      const st = COR_STATUS[it.status] || COR_STATUS.pendente;
+      const horarios = ['entrada','almoco','retorno','saida']
+        .filter(k => it[k]).map(k => `${labels[k]}: ${String(it[k]).slice(0,5)}`).join(' · ') || '—';
+      const card = document.createElement('div');
+      card.className = 'p-md bg-surface-container-low border border-outline-variant/30 rounded-xl';
+      card.innerHTML = `
+        <div class="flex justify-between items-start gap-md">
+          <div class="min-w-0">
+            <p class="font-semibold text-on-surface">${fmtDate(it.data)}</p>
+            <p class="text-label-sm text-on-surface-variant">${esc(horarios)}</p>
+          </div>
+          <span class="px-sm py-1 rounded-full text-label-xs font-semibold flex-shrink-0 ${st.cls}">${st.txt}</span>
+        </div>
+        <p class="text-label-sm text-on-surface-variant mt-1 italic">"${esc(it.motivo)}"</p>
+        ${it.resposta ? `<p class="text-label-sm text-on-surface-variant mt-1">Resposta do admin: ${esc(it.resposta)}</p>` : ''}`;
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById('btn-send-correcao').addEventListener('click', async () => {
+    const errBox = document.getElementById('cor-error'), errMsg = document.getElementById('cor-error-msg');
+    const data    = document.getElementById('cor-data').value;
+    const entrada = document.getElementById('cor-entrada').value;
+    const almoco  = document.getElementById('cor-almoco').value;
+    const retorno = document.getElementById('cor-retorno').value;
+    const saida   = document.getElementById('cor-saida').value;
+    const motivo  = document.getElementById('cor-motivo').value.trim();
+
+    if (!data) { errMsg.textContent = 'Informe a data.'; errBox.classList.remove('hidden'); return; }
+    if (!entrada && !almoco && !retorno && !saida) { errMsg.textContent = 'Preencha ao menos um horário.'; errBox.classList.remove('hidden'); return; }
+    if (!motivo) { errMsg.textContent = 'Descreva o motivo da correção.'; errBox.classList.remove('hidden'); return; }
+    errBox.classList.add('hidden');
+
+    const btn = document.getElementById('btn-send-correcao'), icon = document.getElementById('send-correcao-icon');
+    btn.disabled = true; icon.textContent = 'sync'; icon.classList.add('animate-spin');
+    try {
+      await ChronosState.submitCorrection({ data, entrada, almoco, retorno, saida, motivo });
+      ChronosUI.showToast('Solicitação enviada! Um administrador vai revisar.', 'success');
+      ['cor-entrada','cor-almoco','cor-retorno','cor-saida','cor-motivo'].forEach(id => document.getElementById(id).value = '');
+      renderMyCorrections();
+    } catch (e) {
+      errMsg.textContent = e.message || 'Não foi possível enviar a solicitação.';
+      errBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; icon.classList.remove('animate-spin'); icon.textContent = 'send';
+    }
+  });
 
   // ── Init ──────────────────────────────────────────────────────────────────
   buildMonthTabs();

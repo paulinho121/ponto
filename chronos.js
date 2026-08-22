@@ -447,6 +447,49 @@ const ChronosState = {
     return data || [];
   },
 
+  // ── Correções de ponto (usuário solicita, super admin aprova) ─────────────
+  async submitCorrection({ data, entrada, almoco, retorno, saida, motivo }) {
+    const user = this.getUser();
+    const { data: row, error } = await window.chronosSupabase
+      .from('correcao_pedidos')
+      .insert({
+        user_id: user.id, data,
+        entrada: entrada || null, almoco: almoco || null,
+        retorno: retorno || null, saida: saida || null,
+        motivo,
+      })
+      .select().single();
+    if (error) throw new Error(error.message || 'Não foi possível enviar a solicitação.');
+    return row;
+  },
+
+  async listMyCorrections() {
+    const user = this.getUser();
+    const { data, error } = await window.chronosSupabase
+      .from('correcao_pedidos').select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Admin: lista solicitações (por padrão as pendentes primeiro)
+  async listCorrections({ onlyPending = false } = {}) {
+    let q = window.chronosSupabase.from('correcao_pedidos').select('*');
+    if (onlyPending) q = q.eq('status', 'pendente');
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Admin: aprova/rejeita. Ao aprovar, os horários são aplicados ao ponto.
+  async reviewCorrection(id, aprovar, resposta) {
+    const { data, error } = await window.chronosSupabase
+      .rpc('revisar_correcao', { p_id: id, p_aprovar: aprovar, p_resposta: resposta || null });
+    if (error) throw new Error(error.message || 'Não foi possível revisar a solicitação.');
+    return data;
+  },
+
   async listAllProfiles() {
     const { data, error } = await window.chronosSupabase
       .from('profiles').select('*').order('nome');
